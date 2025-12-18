@@ -1,0 +1,77 @@
+---
+alwaysApply: true
+---
+
+# Cosmic Dominion - Rust/Bevy RTS Game
+
+## Project Context
+Lovecraftian 3D RTS built with Rust (Bevy 0.16+ + Yew) compiled to WASM. Uses vintage-game-generator output as a foundation. Single sophisticated workspace with advanced physics, AI, and 3D asset pipeline.
+
+## Memory Bank Integration
+**CRITICAL**: Always read Memory Bank files at session start:
+1. `memory-bank/projectbrief.md` - Core project vision
+2. `memory-bank/activeContext.md` - Current development focus  
+3. `memory-bank/systemPatterns.md` - Architecture decisions
+4. `memory-bank/techContext.md` - Technology choices
+5. `memory-bank/progress.md` - Implementation status
+
+## Development Workflow
+
+### Core Commands
+```bash
+# Development with hot reload
+trunk serve --address 0.0.0.0 --port 8080
+
+# Fast compilation check
+cargo check --all
+
+# Production WASM build
+trunk build --release
+
+# Quality checks
+cargo clippy -- -D warnings
+cargo fmt --check
+```
+
+### Architecture Commands
+```bash
+cargo doc --open          # Generate docs
+cargo tree               # Dependency analysis
+cargo audit              # Security audit
+```
+
+## Bevy 0.16+ Patterns
+- Use `add_systems()` not deprecated `add_system()`
+- Use `EventWriter::write()` not deprecated `send()`
+- Use `Query::single()` not deprecated `get_single()`
+
+## WASM Integration
+- Use `bevy_rand` with `wasm_js` feature for randomness
+- Use `wasm-bindgen` for JavaScript interop
+- Test browser compatibility during development
+
+## Asset Pipeline
+- GLB models in `assets/` with RON metadata
+- Use `AssetServer::load()` for 3D model loading
+- Atlas optimization for GPU performance
+
+## Performance Targets
+- **Runtime**: 60fps with 300+ entities
+- **Memory**: <100MB peak usage
+- **Loading**: <3 second initial start
+- **Mobile**: Responsive on touch devices
+
+## Crate Structure
+```
+game-physics/   - Rapier3D physics integration
+game-units/     - Unit spawning, formations, selection
+game-ai/        - State machines, behavior trees, utility AI
+game-combat/    - Damage, effects, XP system
+game-world/     - Terrain, fog of war, map management
+```
+
+## Quality Gates
+- All systems integrate with existing ECS architecture
+- No duplicate functionality across modules
+- Comprehensive error handling
+- Follow Rust best practices and Bevy conventions

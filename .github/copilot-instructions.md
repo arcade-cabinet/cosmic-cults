@@ -1,56 +1,89 @@
-# Rust Repository Instructions
+# Copilot Instructions
 
-## Language & Framework
-- **Language**: Rust (edition 2021)
-- **Game Engine**: Bevy (where applicable)
-- **Async Runtime**: Tokio
-- **Error Handling**: thiserror (libraries), anyhow (applications)
+## Organization Context
 
-## Code Style
-- Format with `rustfmt`
-- Lint with `clippy` (deny warnings)
-- Follow Rust API Guidelines: https://rust-lang.github.io/api-guidelines/
+This repository is part of the **jbcom** ecosystem:
 
-## Commands
+- **Organization**: [jbcom](https://github.com/jbcom)
+- **Control Center**: [jbcom/control-center](https://github.com/jbcom/control-center)
+- **Portfolio**: [jbcom.github.io](https://jbcom.github.io)
+
+## Project Management
+
+Link issues and PRs to organization projects:
+
+| Project | Purpose |
+|---------|---------|
+| **Roadmap** | Features and milestones |
+| **Backlog** | Bug fixes, tech debt |
+| **Sprint** | Active development |
+
+## Repository Settings
+
+This organization uses the [Settings GitHub App](https://github.com/apps/settings):
+
+- **Org settings**: `jbcom/control-center/.github/settings.yml`
+- **Repo settings**: `.github/settings.yml` (extends org settings)
+
+## Code Standards
+
+- Check existing patterns before creating new ones
+- Run tests before AND after changes
+- Follow established conventions
+
+### Commit Format
+```
+<type>(<scope>): <description>
+
+Types: feat, fix, docs, style, refactor, test, chore
+```
+
+---
+
+## Repository-Specific Instructions
+
+### Cosmic Cults - Lovecraftian 3D RTS
+
+**Language**: Rust (Edition 2021, targeting 2024)
+**Engine**: Bevy 0.16+ with Rapier3D physics
+**Target**: WASM for web deployment
+
+### Development Commands
 ```bash
+# Development server with hot reload
+trunk serve --address 0.0.0.0 --port 8080
+
 # Check compilation
 cargo check --all
 
 # Run tests
 cargo test --all
 
-# Format
+# Lint and format
+cargo clippy -- -D warnings
 cargo fmt
 
-# Lint
-cargo clippy -- -D warnings
-
-# Build release
-cargo build --release
-
-# Build WASM (if applicable)
-cargo build --target wasm32-unknown-unknown
+# Production WASM build
+trunk build --release
 ```
 
-## Project Structure
-- `src/lib.rs` - Library root
-- `src/main.rs` - Binary entry (if applicable)
-- `tests/` - Integration tests
-- `examples/` - Usage examples
-- `benches/` - Benchmarks
+### Crate Structure
+| Crate | Purpose |
+|-------|---------|
+| `game-physics` | Rapier3D physics integration |
+| `game-units` | Unit spawning, formations, selection |
+| `game-ai` | State machines, behavior trees, utility AI |
+| `game-combat` | Damage, effects, XP system |
+| `game-world` | Terrain, fog of war, map management |
 
-## Error Handling
-- Use `Result<T, E>` for fallible operations
-- Use `?` operator for propagation
-- Define custom error types with `thiserror`
-- Wrap errors with context using `anyhow`
+### Architecture Notes
+- Uses vintage-game-generator output as foundation
+- ECS-based architecture with Bevy systems
+- WASM-first with browser compatibility focus
+- Performance target: 60fps with 300+ entities
 
-## Documentation
-- Document all public items
-- Include examples in doc comments
-- Use `cargo doc --open` to preview
-
-## Dependencies
-- Prefer well-maintained crates
-- Pin versions appropriately
-- Use workspace dependencies for multi-crate projects
+### Key Dependencies
+- `bevy` - Game engine
+- `bevy_rapier3d` - Physics
+- `wasm-bindgen` - WASM interop
+- `trunk` - WASM bundler
