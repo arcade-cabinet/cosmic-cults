@@ -3,21 +3,19 @@ name = "game-physics"
 version = "0.1.0"
 authors.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-documentation.workspace = true
 keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-# Core Bevy engine with minimal features needed for ECS physics
-bevy = { version = "0.16.1", default-features = false, features = [
-    "bevy_asset"
-]}
+# Core Bevy engine
+bevy = { workspace = true, features = ["bevy_asset"] }
 
 # Physics engine
-bevy_rapier3d = { workspace = true, optional = true }
+bevy_rapier3d = { workspace = true }
 
 # Math and utilities
 glam = { workspace = true }
@@ -33,4 +31,3 @@ web-sys = { workspace = true, features = ["console"] }
 
 [features]
 default = []
-rapier = ["bevy_rapier3d"]

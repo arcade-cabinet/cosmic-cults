@@ -4,23 +4,25 @@ resolver = "2"
 
 [workspace.package]
 authors = ["Jon Bogaty <jon@jonbogaty.com>"]
-edition = "2021"
+edition = "2024"
+rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/jbcom/rust-cosmic-cults"
 homepage = "https://github.com/jbcom/rust-cosmic-cults"
-documentation = "https://github.com/jbcom/rust-cosmic-cults"
 keywords = ["game", "rts", "lovecraft", "bevy", "wasm"]
 categories = ["games", "wasm"]
 
 [workspace.dependencies]
-# Core Bevy engine
-bevy = { version = "0.16", default-features = false }
-bevy_rapier3d = "0.31"
+# Core Bevy engine - latest stable
+bevy = { version = "0.17", default-features = false }
+bevy_rapier3d = "0.32"
 
 # Math and utilities
 glam = "0.30"
 smallvec = "1.15"
 ahash = "0.8"
+indexmap = "2.11"
+rand = "0.9"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
