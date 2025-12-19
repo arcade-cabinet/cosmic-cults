@@ -1,5 +1,5 @@
 [workspace]
-members = ["game-physics"]
+members = ["game-physics", "game-world"]
 resolver = "2"
 
 [workspace.package]
@@ -9,6 +9,7 @@ rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/jbcom/rust-cosmic-cults"
 homepage = "https://github.com/jbcom/rust-cosmic-cults"
+documentation = "https://github.com/jbcom/rust-cosmic-cults"
 keywords = ["game", "rts", "lovecraft", "bevy", "wasm"]
 categories = ["games", "wasm"]
 
