@@ -38,7 +38,7 @@ pub fn broad_phase_collision_system(
 pub fn aabb_collision_system(
     collision_pairs: Res<BroadPhaseCollisionPairs>,
     aabb_query: Query<(&Transform, &AABB)>,
-    mut collision_events: EventWriter<CollisionEvent>,
+    mut collision_events: MessageWriter<CollisionEvent>,
 ) {
     for &(entity_a, entity_b) in &collision_pairs.pairs {
         if let (Ok((transform_a, aabb_a)), Ok((transform_b, aabb_b))) = 
@@ -61,7 +61,7 @@ pub fn aabb_collision_system(
 pub fn sphere_collision_system(
     collision_pairs: Res<BroadPhaseCollisionPairs>,
     sphere_query: Query<(&Transform, &PhysicsSphere)>,
-    mut collision_events: EventWriter<CollisionEvent>,
+    mut collision_events: MessageWriter<CollisionEvent>,
 ) {
     for &(entity_a, entity_b) in &collision_pairs.pairs {
         if let (Ok((transform_a, sphere_a)), Ok((transform_b, sphere_b))) = 
@@ -89,7 +89,7 @@ pub fn sensor_system(
     collision_pairs: Res<BroadPhaseCollisionPairs>,
     sensor_query: Query<(&Transform, &PhysicsSphere, &Sensor), With<Sensor>>,
     entity_query: Query<&Transform, Without<Sensor>>,
-    mut trigger_events: EventWriter<TriggerEvent>,
+    mut trigger_events: MessageWriter<TriggerEvent>,
 ) {
     for &(sensor_entity, other_entity) in &collision_pairs.pairs {
         // Check if one entity is a sensor
@@ -125,7 +125,7 @@ pub fn sensor_system(
 
 /// Collision response system for physics-based collision resolution
 pub fn collision_response_system(
-    mut collision_events: EventReader<CollisionEvent>,
+    mut collision_events: MessageReader<CollisionEvent>,
     mut velocity_query: Query<&mut Velocity>,
     mass_query: Query<&Mass>,
     rigid_body_query: Query<&RigidBodyType>,
@@ -186,9 +186,9 @@ pub fn collision_response_system(
 
 /// Raycast system for line-of-sight and projectile collision
 pub fn raycast_system(
-    mut raycast_events: EventReader<RaycastEvent>,
+    mut raycast_events: MessageReader<RaycastEvent>,
     obstacle_query: Query<(&Transform, &AABB), With<Obstacle>>,
-    mut raycast_results: EventWriter<RaycastResultEvent>,
+    mut raycast_results: MessageWriter<RaycastResultEvent>,
 ) {
     for raycast_event in raycast_events.read() {
         let mut hit_found = false;

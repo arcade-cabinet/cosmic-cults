@@ -324,3 +324,18 @@ pub mod prelude {
         create_physics_entity, create_aabb_collider, create_sphere_collider,
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_physics_plugin_initialization() {
+        let mut app = App::new();
+        app.add_plugins(GamePhysicsPlugin::default());
+        
+        // Verify resources are initialized
+        assert!(app.world().get_resource::<GlobalSpatialGrid>().is_some());
+        assert!(app.world().get_resource::<BroadPhaseCollisionPairs>().is_some());
+    }
+}
