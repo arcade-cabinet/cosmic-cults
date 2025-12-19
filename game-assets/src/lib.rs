@@ -1,8 +1,10 @@
 use bevy::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Component)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Default, Component, Reflect)]
+#[reflect(Component)]
 pub enum Cult {
+    #[default]
     Crimson,
     Deep,
     Void,

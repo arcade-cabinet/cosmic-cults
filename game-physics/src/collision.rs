@@ -351,3 +351,7 @@ fn calculate_aabb_normal(hit_point: Vec3, aabb_center: Vec3, _aabb: &AABB) -> Ve
         Vec3::new(0.0, 0.0, local_point.z.signum())
     }
 }
+impl bevy::prelude::Message for CollisionEvent {}
+impl bevy::prelude::Message for TriggerEvent {}
+impl bevy::prelude::Message for RaycastEvent {}
+impl bevy::prelude::Message for RaycastResultEvent {}

@@ -1,5 +1,5 @@
 //! Game World Plugin for Cosmic Dominion
-//! 
+//!
 //! This crate provides the complete world generation, terrain, fog of war,
 //! and entity spawning systems for the game.
 
@@ -25,7 +25,7 @@ impl Plugin for GameWorldPlugin {
            .init_resource::<PathfindingGrid>()
            .init_resource::<VisibilityMap>()
            .init_resource::<TerrainConfig>();
-        
+
         // Add startup systems in the correct order
         app.add_systems(Startup, (
             map::initialize_map,
@@ -33,7 +33,7 @@ impl Plugin for GameWorldPlugin {
             fog::initialize_fog_system,
             spawning::spawn_starting_scene,
         ).chain());
-        
+
         // Add update systems
         app.add_systems(Update, (
             fog::update_fog_system,
@@ -41,11 +41,11 @@ impl Plugin for GameWorldPlugin {
             fog::fog_entity_visibility_system,
             map::update_tile_occupation_system,
         ));
-        
+
         // Add debug visualization (can be disabled in production)
         #[cfg(debug_assertions)]
         app.add_systems(Update, map::debug_draw_map_grid);
-        
+
         info!("Game World Plugin loaded successfully");
     }
 }
@@ -59,14 +59,14 @@ pub fn setup_test_world(mut commands: Commands) {
         shadows_enabled: true,
         ..default()
     });
-    
+
     // Add camera
     commands.spawn((
         Camera3d::default(),
         Transform::from_xyz(0.0, 30.0, 30.0).looking_at(Vec3::ZERO, Vec3::Y),
         Name::new("Main Camera"),
     ));
-    
+
     // Add fog effect
     commands.spawn((
         EnvironmentMapLight {
@@ -134,7 +134,7 @@ mod tests {
     fn test_world_plugin_setup() {
         let mut app = App::new();
         app.add_plugins(GameWorldPlugin);
-        
+
         // Verify resources are initialized
         assert!(app.world().get_resource::<GameMap>().is_some());
     }

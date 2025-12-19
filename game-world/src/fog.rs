@@ -76,7 +76,7 @@ pub fn initialize_fog_system(
 ) {
     // Initialize visibility map for the game area
     let map_radius = 8;
-    
+
     for x in -map_radius..=map_radius {
         for z in -map_radius..=map_radius {
             // Start with everything hidden except the immediate starting area
@@ -86,9 +86,9 @@ pub fn initialize_fog_system(
             } else {
                 VisibilityState::Hidden
             };
-            
+
             visibility_map.tiles.insert((x, z), initial_state);
-            
+
             // Create fog overlay for this tile if not initially visible
             if initial_state != VisibilityState::Visible {
                 spawn_fog_overlay(
@@ -115,10 +115,10 @@ fn spawn_fog_overlay(
 ) {
     let tile_size = 10.0;
     let fog_height = 5.0; // Height of fog overlay above terrain
-    
+
     // Create fog mesh (plane above the tile)
     let fog_mesh = meshes.add(Plane3d::new(Vec3::Y, Vec2::splat(tile_size * 0.5)).mesh());
-    
+
     // Material based on visibility state
     let fog_material = match visibility_state {
         VisibilityState::Hidden => materials.add(StandardMaterial {
@@ -143,7 +143,7 @@ fn spawn_fog_overlay(
             ..default()
         }),
     };
-    
+
     commands.spawn((
         Mesh3d(fog_mesh),
         MeshMaterial3d(fog_material),
@@ -170,38 +170,38 @@ pub fn update_fog_system(
     time: Res<Time>,
 ) {
     let tile_size = 10.0;
-    
+
     // Reset all tiles to not visible (but keep revealed state)
     for (_, state) in visibility_map.tiles.iter_mut() {
         if *state == VisibilityState::Visible {
             *state = VisibilityState::Revealed;
         }
     }
-    
+
     // Update visibility based on vision providers
     for (transform, vision_provider) in vision_providers.iter() {
         // Only process player faction vision
         if vision_provider.faction != Faction::Player {
             continue;
         }
-        
+
         let provider_tile_x = (transform.translation.x / tile_size).round() as i32;
         let provider_tile_z = (transform.translation.z / tile_size).round() as i32;
-        
+
         // Calculate visible tiles using line of sight
         let sight_range_tiles = (vision_provider.sight_range / tile_size).ceil() as i32;
-        
+
         for dx in -sight_range_tiles..=sight_range_tiles {
             for dz in -sight_range_tiles..=sight_range_tiles {
                 let tile_x = provider_tile_x + dx;
                 let tile_z = provider_tile_z + dz;
-                
+
                 // Check if within sight range
                 let distance = ((dx * dx + dz * dz) as f32).sqrt() * tile_size;
                 if distance > vision_provider.sight_range {
                     continue;
                 }
-                
+
                 // Check line of sight
                 if has_line_of_sight(
                     provider_tile_x,
@@ -215,7 +215,7 @@ pub fn update_fog_system(
             }
         }
     }
-    
+
     // Update fog overlay visuals
     for (fog_overlay, mut fog, material_handle) in fog_overlays.iter_mut() {
         if let Some(&visibility_state) = visibility_map.tiles.get(&(fog_overlay.tile_x, fog_overlay.tile_z)) {
@@ -223,11 +223,11 @@ pub fn update_fog_system(
             let was_visible = fog.visible;
             fog.revealed = visibility_state != VisibilityState::Hidden;
             fog.visible = visibility_state == VisibilityState::Visible;
-            
+
             if was_visible && !fog.visible {
                 fog.last_seen_time = time.elapsed_secs();
             }
-            
+
             // Update material based on new visibility state
             if let Some(material) = materials.get_mut(material_handle) {
                 material.base_color = match visibility_state {
@@ -253,34 +253,34 @@ fn has_line_of_sight(
     let dz = (z2 - z1).abs();
     let sx = if x1 < x2 { 1 } else { -1 };
     let sz = if z1 < z2 { 1 } else { -1 };
-    
+
     let mut x = x1;
     let mut z = z1;
     let mut err = dx - dz;
-    
+
     loop {
         // Check if current tile blocks sight (skip the starting tile)
         if (x != x1 || z != z1) && sight_blockers.get(&(x, z)).copied().unwrap_or(false) {
             return false;
         }
-        
+
         if x == x2 && z == z2 {
             break;
         }
-        
+
         let e2 = 2 * err;
-        
+
         if e2 > -dz {
             err -= dz;
             x += sx;
         }
-        
+
         if e2 < dx {
             err += dx;
             z += sz;
         }
     }
-    
+
     true
 }
 
@@ -290,23 +290,23 @@ pub fn reveal_around_spawn_system(
     new_vision_providers: Query<(&Transform, &VisionProvider), Added<VisionProvider>>,
 ) {
     let tile_size = 10.0;
-    
+
     for (transform, vision_provider) in new_vision_providers.iter() {
         if vision_provider.faction != Faction::Player {
             continue;
         }
-        
+
         let provider_tile_x = (transform.translation.x / tile_size).round() as i32;
         let provider_tile_z = (transform.translation.z / tile_size).round() as i32;
-        
+
         // Immediately reveal tiles in range
         let sight_range_tiles = (vision_provider.sight_range / tile_size).ceil() as i32;
-        
+
         for dx in -sight_range_tiles..=sight_range_tiles {
             for dz in -sight_range_tiles..=sight_range_tiles {
                 let tile_x = provider_tile_x + dx;
                 let tile_z = provider_tile_z + dz;
-                
+
                 let distance = ((dx * dx + dz * dz) as f32).sqrt() * tile_size;
                 if distance <= vision_provider.sight_range {
                     visibility_map.tiles.insert((tile_x, tile_z), VisibilityState::Visible);
@@ -322,11 +322,11 @@ pub fn fog_entity_visibility_system(
     mut entities_with_fog: Query<(&Transform, &mut Visibility), With<FogOfWar>>,
 ) {
     let tile_size = 10.0;
-    
+
     for (transform, mut visibility) in entities_with_fog.iter_mut() {
         let tile_x = (transform.translation.x / tile_size).round() as i32;
         let tile_z = (transform.translation.z / tile_size).round() as i32;
-        
+
         // Check visibility state of the tile this entity is on
         if let Some(&visibility_state) = visibility_map.tiles.get(&(tile_x, tile_z)) {
             // Hide entities in fog

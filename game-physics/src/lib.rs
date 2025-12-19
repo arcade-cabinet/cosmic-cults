@@ -1,6 +1,6 @@
 //! Game Physics Crate
-//! 
-//! Foundational physics layer providing collision detection, spatial indexing, 
+//!
+//! Foundational physics layer providing collision detection, spatial indexing,
 //! and movement systems for RTS games. This crate forms the base layer that
 //! other game crates (combat, units, AI) depend on.
 
@@ -51,20 +51,20 @@ impl Plugin for GamePhysicsPlugin {
         // Add resources
         app.insert_resource(GlobalSpatialGrid::new(self.spatial_grid_cell_size))
            .insert_resource(BroadPhaseCollisionPairs::default());
-        
+
         // Add collision events
         if self.enable_collision_detection {
-            app.add_message::<CollisionEvent>()
-               .add_message::<TriggerEvent>()
-               .add_message::<RaycastEvent>()
-               .add_message::<RaycastResultEvent>();
+            app.add_event::<CollisionEvent>()
+               .add_event::<TriggerEvent>()
+               .add_event::<RaycastEvent>()
+               .add_event::<RaycastResultEvent>();
         }
-        
+
         // Add movement events
         if self.enable_movement_systems {
-            app.add_message::<MovementCommandEvent>();
+            app.add_event::<MovementCommandEvent>();
         }
-        
+
         // Add core physics systems
         if self.enable_movement_systems {
             app.add_systems(Update, (
@@ -74,7 +74,7 @@ impl Plugin for GamePhysicsPlugin {
                 movement::waypoint_movement_system,
             ));
         }
-        
+
         if self.enable_collision_detection {
             app.add_systems(Update, (
                 collision::broad_phase_collision_system,
@@ -85,7 +85,7 @@ impl Plugin for GamePhysicsPlugin {
                 collision::raycast_system,
             ));
         }
-        
+
         if self.enable_pathfinding {
             app.add_systems(Update, (
                 movement::formation_movement_system,
@@ -93,7 +93,7 @@ impl Plugin for GamePhysicsPlugin {
                 movement::obstacle_avoidance_system,
             ));
         }
-        
+
         // Add spatial indexing update system
         app.add_systems(PostUpdate, (
             spatial_indexing_update_system,
@@ -111,8 +111,6 @@ pub struct MovementCommandEvent {
     pub entity: Entity,
     pub command: MovementCommand,
 }
-
-impl bevy::prelude::Message for MovementCommandEvent {}
 
 #[derive(Clone, Debug)]
 pub enum MovementCommand {
@@ -142,11 +140,11 @@ pub fn spatial_indexing_update_system(
     time: Res<Time>,
 ) {
     let _current_time = time.elapsed_secs();
-    
+
     for (entity, transform, mut spatial_data) in query.iter_mut() {
         // Update spatial data
         spatial_data.update_position(transform.translation, spatial_grid.grid.cell_size);
-        
+
         // Update spatial grid if position changed significantly
         if spatial_data.has_moved {
             spatial_grid.grid.insert(entity, transform.translation);
@@ -157,7 +155,7 @@ pub fn spatial_indexing_update_system(
 
 /// System to handle movement commands
 pub fn movement_command_system(
-    mut movement_events: MessageReader<MovementCommandEvent>,
+    mut movement_events: EventReader<MovementCommandEvent>,
     mut movement_query: Query<&mut MovementController>,
     mut target_query: Query<&mut MovementTarget>,
     mut path_query: Query<&mut MovementPath>,
@@ -182,7 +180,7 @@ pub fn movement_command_system(
                     target.reached = false;
                 }
             }
-            
+
             MovementCommand::SetPath { waypoints, speed } => {
                 // Try MovementController first
                 if let Ok(mut controller) = movement_query.get_mut(event.entity) {
@@ -200,7 +198,7 @@ pub fn movement_command_system(
                     path.is_moving = !waypoints.is_empty();
                 }
             }
-            
+
             MovementCommand::Stop => {
                 // Stop all movement components
                 if let Ok(mut controller) = movement_query.get_mut(event.entity) {
@@ -217,7 +215,7 @@ pub fn movement_command_system(
                     path.is_moving = false;
                 }
             }
-            
+
             MovementCommand::Follow { target: _, distance: _ } => {
                 // Implementation would require target tracking system
                 // For now, just clear current movement
@@ -269,11 +267,11 @@ pub fn create_aabb_collider(
         CollisionMask::default(),
         RigidBodyType::default(),
     ));
-    
+
     if is_sensor {
         entity_commands.insert(Sensor { is_active: true });
     }
-    
+
     entity_commands.id()
 }
 
@@ -292,11 +290,11 @@ pub fn create_sphere_collider(
         CollisionMask::default(),
         RigidBodyType::default(),
     ));
-    
+
     if is_sensor {
         entity_commands.insert(Sensor { is_active: true });
     }
-    
+
     entity_commands.id()
 }
 
@@ -333,7 +331,7 @@ mod tests {
     fn test_physics_plugin_initialization() {
         let mut app = App::new();
         app.add_plugins(GamePhysicsPlugin::default());
-        
+
         // Verify resources are initialized
         assert!(app.world().get_resource::<GlobalSpatialGrid>().is_some());
         assert!(app.world().get_resource::<BroadPhaseCollisionPairs>().is_some());

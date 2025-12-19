@@ -76,27 +76,27 @@ pub fn initialize_map(
     mut pathfinding_grid: ResMut<PathfindingGrid>,
 ) {
     info!("Initializing game map with {}x{} tiles", game_map.width, game_map.height);
-    
+
     let half_width = game_map.width / 2;
     let half_height = game_map.height / 2;
-    
+
     // Initialize all tiles
     for x in -half_width..=half_width {
         for z in -half_height..=half_height {
             let distance_from_center = ((x * x + z * z) as f32).sqrt();
-            
+
             // Determine tile type based on position
             let tile_type = determine_tile_type(x, z, distance_from_center);
-            
+
             // Calculate corruption level
             let corruption_level = calculate_tile_corruption(distance_from_center);
-            
+
             // Determine if walkable
             let walkable = is_tile_walkable(tile_type, corruption_level);
-            
+
             // Calculate movement cost
             let movement_cost = calculate_movement_cost(tile_type, corruption_level);
-            
+
             // Store tile info
             let tile_info = TileInfo {
                 position: (x, z),
@@ -105,13 +105,13 @@ pub fn initialize_map(
                 corruption_level,
                 height: 0.0, // Will be set by terrain generation
             };
-            
+
             game_map.tiles.insert((x, z), tile_info);
             pathfinding_grid.walkable.insert((x, z), walkable);
             pathfinding_grid.movement_costs.insert((x, z), movement_cost);
         }
     }
-    
+
     // Mark starting area as safe
     for dx in -1..=1 {
         for dz in -1..=1 {
@@ -133,17 +133,17 @@ fn determine_tile_type(x: i32, z: i32, distance: f32) -> TileType {
             return TileType::Void;
         }
     }
-    
+
     // Create water features
     if ((x * 3 + z * 2) % 7 == 0) && distance > 3.0 {
         return TileType::Water;
     }
-    
+
     // Create cliff areas
     if ((x.abs() + z.abs()) % 8 == 0) && distance > 2.0 {
         return TileType::Cliff;
     }
-    
+
     // Default to ground
     TileType::Ground
 }
@@ -152,10 +152,10 @@ fn determine_tile_type(x: i32, z: i32, distance: f32) -> TileType {
 fn calculate_tile_corruption(distance: f32) -> f32 {
     // Corruption increases with distance from center
     let base_corruption = (distance / 10.0).min(1.0);
-    
+
     // Add some variation
     let variation = ((distance * 0.5).sin() * 0.1).abs();
-    
+
     (base_corruption + variation).min(1.0)
 }
 
@@ -179,7 +179,7 @@ fn calculate_movement_cost(tile_type: TileType, corruption_level: f32) -> f32 {
         TileType::Cliff => 999.0, // Very high cost (not walkable)
         TileType::Void => 2.0 + corruption_level * 3.0,
     };
-    
+
     // Corruption increases movement cost
     base_cost * (1.0 + corruption_level * 0.5)
 }
@@ -205,7 +205,7 @@ pub fn update_tile_occupation_system(
     for tile in game_map.tiles.values_mut() {
         tile.occupied = false;
     }
-    
+
     // Mark occupied tiles
     for transform in occupants.iter() {
         let (x, z) = world_to_grid(transform.translation, game_map.tile_size);
@@ -223,31 +223,31 @@ pub fn find_path(
 ) -> Option<Vec<(i32, i32)>> {
     use std::collections::{BinaryHeap, HashSet};
     use std::cmp::Ordering;
-    
+
     #[derive(Clone, Eq, PartialEq)]
     struct Node {
         position: (i32, i32),
         cost: i32,
         heuristic: i32,
     }
-    
+
     impl Ord for Node {
         fn cmp(&self, other: &Self) -> Ordering {
             (other.cost + other.heuristic).cmp(&(self.cost + self.heuristic))
         }
     }
-    
+
     impl PartialOrd for Node {
         fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
             Some(self.cmp(other))
         }
     }
-    
+
     let mut open_set = BinaryHeap::new();
     let mut closed_set = HashSet::new();
     let mut came_from = HashMap::new();
     let mut g_score = HashMap::new();
-    
+
     // Add starting node
     open_set.push(Node {
         position: start,
@@ -255,13 +255,13 @@ pub fn find_path(
         heuristic: manhattan_distance(start, goal),
     });
     g_score.insert(start, 0);
-    
+
     while let Some(current) = open_set.pop() {
         if current.position == goal {
             // Reconstruct path
             let mut path = Vec::new();
             let mut current_pos = goal;
-            
+
             while current_pos != start {
                 path.push(current_pos);
                 if let Some(&prev) = came_from.get(&current_pos) {
@@ -272,31 +272,31 @@ pub fn find_path(
             }
             path.push(start);
             path.reverse();
-            
+
             return Some(path);
         }
-        
+
         if closed_set.contains(&current.position) {
             continue;
         }
         closed_set.insert(current.position);
-        
+
         // Check neighbors
         for &(dx, dz) in &[(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)] {
             let neighbor = (current.position.0 + dx, current.position.1 + dz);
-            
+
             // Check if walkable
             if !pathfinding_grid.walkable.get(&neighbor).copied().unwrap_or(false) {
                 continue;
             }
-            
-            let tentative_g_score = g_score[&current.position] + 
+
+            let tentative_g_score = g_score[&current.position] +
                 (pathfinding_grid.movement_costs.get(&neighbor).copied().unwrap_or(999.0) * 100.0) as i32;
-            
+
             if tentative_g_score < *g_score.get(&neighbor).unwrap_or(&i32::MAX) {
                 came_from.insert(neighbor, current.position);
                 g_score.insert(neighbor, tentative_g_score);
-                
+
                 open_set.push(Node {
                     position: neighbor,
                     cost: tentative_g_score,
@@ -305,7 +305,7 @@ pub fn find_path(
             }
         }
     }
-    
+
     None
 }
 
@@ -321,20 +321,20 @@ pub fn debug_draw_map_grid(
 ) {
     let half_width = game_map.width / 2;
     let half_height = game_map.height / 2;
-    
+
     // Draw grid lines
     for x in -half_width..=half_width {
         let start = grid_to_world(x, -half_height, game_map.tile_size);
         let end = grid_to_world(x, half_height, game_map.tile_size);
         gizmos.line(start, end, Color::srgba(0.2, 0.2, 0.2, 0.3));
     }
-    
+
     for z in -half_height..=half_height {
         let start = grid_to_world(-half_width, z, game_map.tile_size);
         let end = grid_to_world(half_width, z, game_map.tile_size);
         gizmos.line(start, end, Color::srgba(0.2, 0.2, 0.2, 0.3));
     }
-    
+
     // Highlight starting position
     let start_pos = grid_to_world(game_map.starting_position.0, game_map.starting_position.1, game_map.tile_size);
     gizmos.circle(start_pos + Vec3::Y * 0.1, game_map.tile_size * 0.4, Color::srgb(0.0, 1.0, 0.0));
