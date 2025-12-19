@@ -54,15 +54,15 @@ impl Plugin for GamePhysicsPlugin {
         
         // Add collision events
         if self.enable_collision_detection {
-            app.add_event::<CollisionEvent>()
-               .add_event::<TriggerEvent>()
-               .add_event::<RaycastEvent>()
-               .add_event::<RaycastResultEvent>();
+            app.add_message::<CollisionEvent>()
+               .add_message::<TriggerEvent>()
+               .add_message::<RaycastEvent>()
+               .add_message::<RaycastResultEvent>();
         }
         
         // Add movement events
         if self.enable_movement_systems {
-            app.add_event::<MovementCommandEvent>();
+            app.add_message::<MovementCommandEvent>();
         }
         
         // Add core physics systems
@@ -157,7 +157,7 @@ pub fn spatial_indexing_update_system(
 
 /// System to handle movement commands
 pub fn movement_command_system(
-    mut movement_events: EventReader<MovementCommandEvent>,
+    mut movement_events: MessageReader<MovementCommandEvent>,
     mut movement_query: Query<&mut MovementController>,
     mut target_query: Query<&mut MovementTarget>,
     mut path_query: Query<&mut MovementPath>,
