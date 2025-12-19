@@ -1,5 +1,5 @@
 [workspace]
-members = ["game-physics", "game-world"]
+members = ["game-physics", "game-world", "game-assets"]
 resolver = "2"
 
 [workspace.package]
@@ -17,6 +17,7 @@ categories = ["games", "wasm"]
 # Core Bevy engine - latest stable
 bevy = { version = "0.17", default-features = false }
 bevy_rapier3d = "0.32"
+bevy_rand = "0.12"
 
 # Math and utilities
 glam = "0.30"
