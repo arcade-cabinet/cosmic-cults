@@ -1,7 +1,6 @@
 //! Map management and grid system for Cosmic Dominion
 
 use bevy::prelude::*;
-use bevy::log::info;
 use std::collections::HashMap;
 
 /// Resource representing the game map
@@ -72,7 +71,7 @@ impl Default for PathfindingGrid {
 
 /// Initialize the game map
 pub fn initialize_map(
-    mut commands: Commands,
+    _commands: Commands,
     mut game_map: ResMut<GameMap>,
     mut pathfinding_grid: ResMut<PathfindingGrid>,
 ) {

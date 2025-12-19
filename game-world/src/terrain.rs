@@ -92,7 +92,7 @@ pub fn generate_terrain_system(
     let mut rng = StdRng::seed_from_u64(terrain_config.seed);
     
     // Generate a 3x3 starting area with surrounding terrain
-    let start_radius = 5; // 11x11 grid centered at origin
+    let _start_radius = 5; // 11x11 grid centered at origin
     let fog_radius = 8;   // Additional fog tiles beyond visible area
     
     // Track generated tiles for biome clustering
@@ -301,11 +301,11 @@ fn create_tile_mesh(size: f32, height: f32, corruption_level: f32) -> Mesh {
         }
     }
     
-    Mesh::new(bevy::render::mesh::PrimitiveTopology::TriangleList, bevy::render::render_asset::RenderAssetUsages::default())
+    Mesh::new(bevy::render::render_resource::PrimitiveTopology::TriangleList, bevy::asset::RenderAssetUsages::default())
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
         .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
-        .with_inserted_indices(bevy::render::mesh::Indices::U32(indices))
+        .with_inserted_indices(bevy::mesh::Indices::U32(indices))
 }
 
 /// Spawn decorative elements for biomes
@@ -449,10 +449,10 @@ fn create_crystal_mesh(rng: &mut StdRng) -> Mesh {
         indices.push(2 + i as u32);
     }
     
-    Mesh::new(bevy::render::mesh::PrimitiveTopology::TriangleList, bevy::render::render_asset::RenderAssetUsages::default())
+    Mesh::new(bevy::render::render_resource::PrimitiveTopology::TriangleList, bevy::asset::RenderAssetUsages::default())
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-        .with_inserted_indices(bevy::render::mesh::Indices::U32(indices))
+        .with_inserted_indices(bevy::mesh::Indices::U32(indices))
 }
 
 /// Create a void pillar mesh

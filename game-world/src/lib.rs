@@ -4,7 +4,6 @@
 //! and entity spawning systems for the game.
 
 use bevy::prelude::*;
-use bevy::log::info;
 
 pub mod terrain;
 pub mod fog;
@@ -125,4 +124,18 @@ pub enum GameMode {
     Tutorial,
     Standard,
     Hardcore,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_world_plugin_setup() {
+        let mut app = App::new();
+        app.add_plugins(GameWorldPlugin);
+        
+        // Verify resources are initialized
+        assert!(app.world().get_resource::<GameMap>().is_some());
+    }
 }

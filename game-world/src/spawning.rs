@@ -1,7 +1,6 @@
 //! World entity spawning system for Cosmic Dominion
 
 use bevy::prelude::*;
-use bevy::log::info;
 use game_assets::{models, Cult};
 use crate::fog::{VisionProvider, Faction};
 
@@ -133,7 +132,7 @@ fn spawn_leadership_building(
 /// Spawn the cult leader
 fn spawn_cult_leader(
     commands: &mut Commands,
-    asset_server: &AssetServer,
+    _asset_server: &AssetServer,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     position: Vec3,
@@ -218,7 +217,7 @@ fn spawn_player_unit(
 /// Spawn the initial creature
 fn spawn_initial_creature(
     commands: &mut Commands,
-    asset_server: &AssetServer,
+    _asset_server: &AssetServer,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     position: Vec3,
@@ -409,7 +408,7 @@ fn create_cult_symbol_mesh() -> Mesh {
         indices.push(((i + 1) % (points * 2) + 1) as u32);
     }
     
-    Mesh::new(bevy::render::mesh::PrimitiveTopology::TriangleList, bevy::render::render_asset::RenderAssetUsages::default())
+    Mesh::new(bevy::render::render_resource::PrimitiveTopology::TriangleList, bevy::asset::RenderAssetUsages::default())
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-        .with_inserted_indices(bevy::render::mesh::Indices::U32(indices))
+        .with_inserted_indices(bevy::mesh::Indices::U32(indices))
 }
