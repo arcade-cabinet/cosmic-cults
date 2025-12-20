@@ -4,6 +4,8 @@ use crate::damage::{DamageEvent, DeathEvent};
 use bevy::pbr::StandardMaterial;
 use bevy::prelude::*;
 use bevy::render::alpha::AlphaMode;
+// TODO: Use bevy_rand for proper RNG integration when visual effects need randomness
+#[allow(unused_imports)]
 use rand::Rng;
 
 // Visual effect components
