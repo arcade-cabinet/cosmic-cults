@@ -28,8 +28,13 @@ alwaysApply: true
 ## Authentication
 
 ```bash
-# jbcom repos - ALWAYS use this pattern
-GH_TOKEN="$GITHUB_TOKEN" gh <command>
+# jbcom repos - Use CI_GITHUB_TOKEN when available, fallback to GITHUB_TOKEN
+# CI_GITHUB_TOKEN is specifically issued for CI/agent operations
+GH_TOKEN="${CI_GITHUB_TOKEN:-$GITHUB_TOKEN}" gh <command>
+
+# Preferred order:
+# 1. CI_GITHUB_TOKEN - issued specifically for CI/agent workflows
+# 2. GITHUB_TOKEN - general purpose token
 ```
 
 ## Session Management
