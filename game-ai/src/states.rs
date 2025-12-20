@@ -363,25 +363,32 @@ fn execute_search_state(
 
 // System to trigger state transitions based on game events
 pub fn state_transition_system(
-    mut query: Query<(Entity, &mut AIStateMachine, &Transform, Option<&Unit>)>,
-    enemy_query: Query<(Entity, &Transform, &Team), Without<AIStateMachine>>,
+    mut query: Query<(Entity, &mut AIStateMachine, &Transform, Option<&Unit>, Option<&Team>)>,
+    other_units_query: Query<(Entity, &Transform, &Team), Without<AIStateMachine>>,
     time: Res<Time>,
 ) {
-    for (entity, mut state_machine, transform, unit) in query.iter_mut() {
+    for (entity, mut state_machine, transform, unit, my_team) in query.iter_mut() {
         // Check for enemies in detection range
         let detection_range = 15.0;
         let mut enemy_detected = false;
         let mut closest_enemy: Option<(Entity, f32)> = None;
 
-        for (enemy_entity, enemy_transform, enemy_team) in enemy_query.iter() {
-            // Skip if same team (would need proper team checking)
-            let distance = transform.translation.distance(enemy_transform.translation);
+        // Get our team ID, default to 0 if no team component
+        let my_team_id = my_team.map(|t| t.id).unwrap_or(0);
+
+        for (other_entity, other_transform, other_team) in other_units_query.iter() {
+            // Skip if same team - proper team checking
+            if other_team.id == my_team_id {
+                continue;
+            }
+
+            let distance = transform.translation.distance(other_transform.translation);
 
             if distance < detection_range {
                 enemy_detected = true;
 
                 if closest_enemy.is_none() || distance < closest_enemy.unwrap().1 {
-                    closest_enemy = Some((enemy_entity, distance));
+                    closest_enemy = Some((other_entity, distance));
                 }
             }
         }
