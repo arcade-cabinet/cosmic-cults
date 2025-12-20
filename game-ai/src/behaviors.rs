@@ -192,22 +192,22 @@ impl BehaviorNode {
             },
 
             BehaviorNode::UntilFail(child) => {
-                loop {
-                    match child.execute(entity, blackboard, world, commands) {
-                        NodeStatus::Failure => return NodeStatus::Success,
-                        NodeStatus::Running => return NodeStatus::Running,
-                        NodeStatus::Success => continue,
-                    }
+                // Execute child once per tick to prevent infinite loops
+                // Returns Running to allow the game loop to continue
+                match child.execute(entity, blackboard, world, commands) {
+                    NodeStatus::Failure => NodeStatus::Success,
+                    NodeStatus::Running => NodeStatus::Running,
+                    NodeStatus::Success => NodeStatus::Running, // Continue next tick
                 }
             },
 
             BehaviorNode::UntilSuccess(child) => {
-                loop {
-                    match child.execute(entity, blackboard, world, commands) {
-                        NodeStatus::Success => return NodeStatus::Success,
-                        NodeStatus::Running => return NodeStatus::Running,
-                        NodeStatus::Failure => continue,
-                    }
+                // Execute child once per tick to prevent infinite loops
+                // Returns Running to allow the game loop to continue
+                match child.execute(entity, blackboard, world, commands) {
+                    NodeStatus::Success => NodeStatus::Success,
+                    NodeStatus::Running => NodeStatus::Running,
+                    NodeStatus::Failure => NodeStatus::Running, // Continue next tick
                 }
             },
 
