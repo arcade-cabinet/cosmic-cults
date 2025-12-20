@@ -213,3 +213,4 @@ pub fn squad_coordination_system(
         }
     }
 }impl bevy::prelude::Message for AICommandEvent {}
+impl bevy::prelude::Message for AIPerceptionEvent {}

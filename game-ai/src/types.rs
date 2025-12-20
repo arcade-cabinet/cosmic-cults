@@ -99,4 +99,4 @@ pub enum AIOrder {
     Build(String, Vec3),
     Follow(Entity),
     Stop,
-}
+}impl bevy::prelude::Message for AIMessage {}

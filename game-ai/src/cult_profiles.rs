@@ -433,4 +433,4 @@ pub mod presets {
 
         (profile, utility_ai, coordination, psychological_state)
     }
-}
+}impl bevy::prelude::Message for PsychologicalEvent {}
