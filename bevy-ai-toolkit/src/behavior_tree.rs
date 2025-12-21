@@ -69,6 +69,13 @@ impl Blackboard {
         }
     }
 
+    pub fn get_entity(&self, key: &str) -> Option<Entity> {
+        match self.values.get(key) {
+            Some(BlackboardValue::Entity(bits)) => Some(Entity::from_bits(*bits)),
+            _ => None,
+        }
+    }
+
     pub fn set_bool(&mut self, key: String, value: bool) {
         self.values.insert(key, BlackboardValue::Bool(value));
     }
@@ -94,6 +101,10 @@ impl Blackboard {
                 z: value.z,
             },
         );
+    }
+
+    pub fn set_entity(&mut self, key: String, value: Entity) {
+        self.values.insert(key, BlackboardValue::Entity(value.to_bits()));
     }
 }
 
