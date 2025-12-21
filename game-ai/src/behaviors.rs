@@ -250,7 +250,7 @@ fn execute_action(
             if let Some(target) = blackboard.get_entity("attack_target") {
                 commands
                     .entity(entity)
-                    .insert(crate::systems::state_machine::AttackBehavior {
+                    .insert(crate::game_behaviors::AttackBehavior {
                         target: Some(target),
                         aggression_level: 1.0,
                     });
@@ -295,7 +295,7 @@ fn execute_action(
             if let Some(resource) = blackboard.get_entity("resource_target") {
                 commands
                     .entity(entity)
-                    .insert(crate::systems::state_machine::GatheringBehavior {
+                    .insert(crate::game_behaviors::GatheringBehavior {
                         target_resource: Some(resource),
                         gathering_rate: 1.0,
                     });
@@ -324,7 +324,7 @@ fn execute_action(
             if let Some(defend_pos) = blackboard.get_vec3("defend_position") {
                 commands
                     .entity(entity)
-                    .insert(crate::systems::state_machine::DefendBehavior {
+                    .insert(crate::game_behaviors::DefendBehavior {
                         defend_position: defend_pos,
                         patrol_radius: 10.0,
                     });

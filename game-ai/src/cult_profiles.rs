@@ -1,7 +1,5 @@
 // Cult-specific AI profiles and behaviors
-use crate::systems::{
-    Consideration, InputType, ResponseCurve, UtilityAI, UtilityAction, UtilityActionType,
-};
+use bevy_ai_toolkit::prelude::*; // Use toolkit types
 use crate::types::{AICoordination, AIRole};
 use bevy::prelude::*;
 use std::collections::HashMap;
