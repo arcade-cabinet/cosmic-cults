@@ -5,3 +5,10 @@ bin/
 bin
 **/*.rs.bk
 .DS_Store
+
+# Trunk/WASM build artifacts
+dist/
+dist
+
+# Pre-commit
+.pre-commit-cache/

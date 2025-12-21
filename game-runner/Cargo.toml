@@ -11,3 +11,18 @@ game-world = { path = "../game-world" }
 game-units = { path = "../game-units" }
 game-combat = { path = "../game-combat" }
 game-ai = { path = "../game-ai" }
+
+# Additional dependencies for examples
+rand = { workspace = true }
+
+[[example]]
+name = "basic_physics"
+path = "examples/basic_physics.rs"
+
+[[example]]
+name = "unit_spawning"
+path = "examples/unit_spawning.rs"
+
+[[example]]
+name = "formations"
+path = "examples/formations.rs"

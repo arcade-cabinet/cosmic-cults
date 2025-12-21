@@ -1,0 +1,63 @@
+name: CI
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  # Consolidated job using matrix for DRY principle
+  ci:
+    name: ${{ matrix.job.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - name: Format
+            run: cargo fmt --all -- --check
+            components: rustfmt
+            cache: false
+          - name: Clippy
+            run: cargo clippy --all-targets --all-features -- -D warnings
+            components: clippy
+            cache: true
+          - name: Check
+            run: cargo check --all-targets --all-features
+            cache: true
+          - name: Test
+            run: cargo test --all-features
+            cache: true
+          - name: Doc
+            run: cargo doc --no-deps --all-features
+            cache: true
+            rustdocflags: -D warnings
+          - name: WASM
+            run: cargo check --target wasm32-unknown-unknown --all-features
+            cache: true
+            targets: wasm32-unknown-unknown
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: ${{ matrix.job.components || '' }}
+          targets: ${{ matrix.job.targets || '' }}
+
+      - name: Cache
+        if: matrix.job.cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: ${{ matrix.job.name }}
+        run: ${{ matrix.job.run }}
+        env:
+          RUSTDOCFLAGS: ${{ matrix.job.rustdocflags || '' }}

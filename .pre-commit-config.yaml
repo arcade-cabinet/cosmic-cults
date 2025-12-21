@@ -1,0 +1,54 @@
+# Pre-commit hooks for Rust projects
+# Install with: pre-commit install
+# Run manually with: pre-commit run --all-files
+
+repos:
+  # Rust formatting
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        description: Format Rust code with rustfmt
+        entry: cargo fmt
+        args: ['--all', '--', '--check']
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+  # Rust linting
+  - repo: local
+    hooks:
+      - id: cargo-clippy
+        name: cargo clippy
+        description: Lint Rust code with clippy
+        entry: cargo clippy
+        args: ['--all-targets', '--all-features', '--', '-D', 'warnings']
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+  # Check Cargo.toml files
+  - repo: local
+    hooks:
+      - id: cargo-check
+        name: cargo check
+        description: Check Rust code compiles
+        entry: cargo check
+        args: ['--all-targets', '--all-features']
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+  # Trailing whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '^(\.github/|docs/)'
+      - id: end-of-file-fixer
+        exclude: '^(\.github/|docs/)'
+      - id: check-yaml
+        args: ['--unsafe']
+      - id: check-toml
+      - id: mixed-line-ending
+        args: ['--fix=lf']
