@@ -1,5 +1,8 @@
 FROM rust:1.92.0-trixie
 
+# Ensure Rust toolchain is in PATH for all shell contexts
+ENV PATH="/usr/local/cargo/bin:${PATH}"
+
 WORKDIR /workspace
 
 RUN apt-get update -qq && \
@@ -57,6 +60,9 @@ RUN apt-get update -qq && \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+
+# Ensure clippy and rustfmt are available
+RUN rustup component add clippy rustfmt
 
 RUN cargo binstall --no-confirm cargo-watch cargo-edit cargo-audit cargo-outdated sqlx-cli
 
