@@ -138,9 +138,9 @@ impl AIDecisionMaker {
             expansion_score,
         ));
 
-        // Sort by score and add best decisions to queue
+        // Sort by score (highest first), treating NaN as lowest value
         self.evaluation_scores
-            .sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+            .sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Less));
 
         // Collect decisions to add to avoid borrowing conflicts
         let decisions_to_add: Vec<(DecisionType, f32)> = self

@@ -156,8 +156,8 @@ impl DecisionMaker {
             ));
         }
 
-        // Sort goals by score
-        goal_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        // Sort goals by score (highest first), treating NaN as lowest value
+        goal_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Less));
 
         // Select best goal
         if let Some((goal, score)) = goal_scores.first() {
