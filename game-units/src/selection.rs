@@ -110,7 +110,7 @@ pub fn movement_command_system(
     input_state: Res<InputState>,
     selection_state: Res<SelectionState>,
     mut command_queue: ResMut<CommandQueue>,
-    mut movement_events: MessageWriter<MovementCommandEvent>,
+    mut movement_events: EventWriter<MovementCommandEvent>,
     mut unit_query: Query<(&mut MovementController, &mut MovementPath), With<Unit>>,
 ) {
     if input_state.right_mouse_pressed && !selection_state.selected_entities.is_empty() {
