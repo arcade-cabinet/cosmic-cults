@@ -452,7 +452,7 @@ pub fn state_transition_system(
         Option<&Unit>,
         Option<&Team>,
     )>,
-    other_units_query: Query<(Entity, &Transform, &Team), Without<AIStateMachine>>,
+    other_units_query: Query<(Entity, &Transform, &Team)>,
     time: Res<Time>,
 ) {
     for (entity, mut state_machine, transform, unit, my_team) in query.iter_mut() {
@@ -465,6 +465,11 @@ pub fn state_transition_system(
         let my_team_id = my_team.map(|t| t.id).unwrap_or(0);
 
         for (other_entity, other_transform, other_team) in other_units_query.iter() {
+            // Skip self - don't target ourselves
+            if other_entity == entity {
+                continue;
+            }
+
             // Skip if same team - proper team checking
             if other_team.id == my_team_id {
                 continue;
