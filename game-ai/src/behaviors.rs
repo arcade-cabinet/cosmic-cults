@@ -1,7 +1,7 @@
 // Behavior Tree Implementation - Production-ready behavior tree for complex AI logic
 use bevy::prelude::*;
+use game_units::{Unit, Team};
 use game_physics::prelude::*;
-use game_units::{Team, Unit};
 use std::collections::HashMap;
 
 // Core behavior tree node types
@@ -138,7 +138,7 @@ impl BehaviorNode {
                     }
                 }
                 NodeStatus::Success
-            }
+            },
 
             BehaviorNode::Selector(children) => {
                 for child in children.iter_mut() {
@@ -149,7 +149,7 @@ impl BehaviorNode {
                     }
                 }
                 NodeStatus::Failure
-            }
+            },
 
             BehaviorNode::Parallel(children, min_success) => {
                 let mut success_count = 0;
@@ -159,7 +159,7 @@ impl BehaviorNode {
                     match child.execute(entity, blackboard, world, commands) {
                         NodeStatus::Success => success_count += 1,
                         NodeStatus::Running => has_running = true,
-                        NodeStatus::Failure => {}
+                        NodeStatus::Failure => {},
                     }
                 }
 
@@ -170,7 +170,7 @@ impl BehaviorNode {
                 } else {
                     NodeStatus::Failure
                 }
-            }
+            },
 
             BehaviorNode::Inverter(child) => {
                 match child.execute(entity, blackboard, world, commands) {
@@ -178,7 +178,7 @@ impl BehaviorNode {
                     NodeStatus::Failure => NodeStatus::Success,
                     NodeStatus::Running => NodeStatus::Running,
                 }
-            }
+            },
 
             BehaviorNode::Repeater(child, times) => {
                 for _ in 0..*times {
@@ -189,31 +189,31 @@ impl BehaviorNode {
                     }
                 }
                 NodeStatus::Success
-            }
+            },
 
             BehaviorNode::UntilFail(child) => {
-                // Execute child once per tick to prevent infinite loops
-                // Returns Running to allow the game loop to continue
-                match child.execute(entity, blackboard, world, commands) {
-                    NodeStatus::Failure => NodeStatus::Success,
-                    NodeStatus::Running => NodeStatus::Running,
-                    NodeStatus::Success => NodeStatus::Running, // Continue next tick
+                loop {
+                    match child.execute(entity, blackboard, world, commands) {
+                        NodeStatus::Failure => return NodeStatus::Success,
+                        NodeStatus::Running => return NodeStatus::Running,
+                        NodeStatus::Success => continue,
+                    }
                 }
-            }
+            },
 
             BehaviorNode::UntilSuccess(child) => {
-                // Execute child once per tick to prevent infinite loops
-                // Returns Running to allow the game loop to continue
-                match child.execute(entity, blackboard, world, commands) {
-                    NodeStatus::Success => NodeStatus::Success,
-                    NodeStatus::Running => NodeStatus::Running,
-                    NodeStatus::Failure => NodeStatus::Running, // Continue next tick
+                loop {
+                    match child.execute(entity, blackboard, world, commands) {
+                        NodeStatus::Success => return NodeStatus::Success,
+                        NodeStatus::Running => return NodeStatus::Running,
+                        NodeStatus::Failure => continue,
+                    }
                 }
-            }
+            },
 
             BehaviorNode::Action(action) => {
                 execute_action(action, entity, blackboard, world, commands)
-            }
+            },
 
             BehaviorNode::Condition(condition) => {
                 if check_condition(condition, entity, blackboard, world) {
@@ -221,7 +221,7 @@ impl BehaviorNode {
                 } else {
                     NodeStatus::Failure
                 }
-            }
+            },
         }
     }
 }
@@ -248,30 +248,25 @@ fn execute_action(
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
 
         AIAction::AttackTarget => {
             if let Some(target) = blackboard.get_entity("attack_target") {
-                commands
-                    .entity(entity)
-                    .insert(crate::systems::state_machine::AttackBehavior {
-                        target: Some(target),
-                        aggression_level: 1.0,
-                    });
+                commands.entity(entity).insert(crate::systems::state_machine::AttackBehavior {
+                    target: Some(target),
+                    aggression_level: 1.0,
+                });
                 NodeStatus::Running
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
 
         AIAction::Patrol => {
             // Get patrol points from blackboard
             if let Some(patrol_index) = blackboard.get_float("patrol_index") {
                 let next_index = ((patrol_index as usize + 1) % 4) as f32;
-                blackboard.set(
-                    "patrol_index".to_string(),
-                    BlackboardValue::Float(next_index),
-                );
+                blackboard.set("patrol_index".to_string(), BlackboardValue::Float(next_index));
 
                 // Generate patrol point based on index
                 let base_pos = blackboard.get_vec3("base_position").unwrap_or(Vec3::ZERO);
@@ -283,31 +278,26 @@ fn execute_action(
                 };
 
                 let patrol_point = base_pos + offset;
-                blackboard.set(
-                    "target_position".to_string(),
-                    BlackboardValue::Vec3(patrol_point),
-                );
+                blackboard.set("target_position".to_string(), BlackboardValue::Vec3(patrol_point));
 
                 NodeStatus::Success
             } else {
                 blackboard.set("patrol_index".to_string(), BlackboardValue::Float(0.0));
                 NodeStatus::Success
             }
-        }
+        },
 
         AIAction::GatherResource => {
             if let Some(resource) = blackboard.get_entity("resource_target") {
-                commands
-                    .entity(entity)
-                    .insert(crate::systems::state_machine::GatheringBehavior {
-                        target_resource: Some(resource),
-                        gathering_rate: 1.0,
-                    });
+                commands.entity(entity).insert(crate::systems::state_machine::GatheringBehavior {
+                    target_resource: Some(resource),
+                    gathering_rate: 1.0,
+                });
                 NodeStatus::Running
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
 
         AIAction::ReturnToBase => {
             if let Some(base_pos) = blackboard.get_vec3("base_position") {
@@ -322,42 +312,37 @@ fn execute_action(
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
 
         AIAction::DefendPosition => {
             if let Some(defend_pos) = blackboard.get_vec3("defend_position") {
-                commands
-                    .entity(entity)
-                    .insert(crate::systems::state_machine::DefendBehavior {
-                        defend_position: defend_pos,
-                        patrol_radius: 10.0,
-                    });
+                commands.entity(entity).insert(crate::systems::state_machine::DefendBehavior {
+                    defend_position: defend_pos,
+                    patrol_radius: 10.0,
+                });
                 NodeStatus::Running
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
 
         AIAction::SearchArea => {
             // Implement search pattern
             blackboard.set("searching".to_string(), BlackboardValue::Bool(true));
             NodeStatus::Running
-        }
+        },
 
         AIAction::CallForHelp => {
             // Send help request to nearby allies
             blackboard.set("help_requested".to_string(), BlackboardValue::Bool(true));
             NodeStatus::Success
-        }
+        },
 
         AIAction::UseAbility(ability_name) => {
             // Trigger ability usage
-            blackboard.set(
-                "ability_used".to_string(),
-                BlackboardValue::String(ability_name.clone()),
-            );
+            blackboard.set("ability_used".to_string(), BlackboardValue::String(ability_name.clone()));
             NodeStatus::Success
-        }
+        },
     }
 }
 
@@ -370,54 +355,54 @@ fn check_condition(
 ) -> bool {
     match condition {
         AICondition::HasTarget => {
-            blackboard.get_entity("attack_target").is_some()
-                || blackboard.get_vec3("target_position").is_some()
-        }
+            blackboard.get_entity("attack_target").is_some() ||
+            blackboard.get_vec3("target_position").is_some()
+        },
 
         AICondition::TargetInRange(range) => {
-            if let Some(target_pos) = blackboard.get_vec3("target_position") {
-                if let Ok(entity_ref) = world.get_entity(entity) {
-                    if let Some(transform) = entity_ref.get::<Transform>() {
+            if let Some(target_pos) = blackboard.get_vec3("target_position")
+                && let Ok(entity_ref) = world.get_entity(entity)
+                    && let Some(transform) = entity_ref.get::<Transform>() {
                         return transform.translation.distance(target_pos) <= *range;
                     }
-                }
-            }
             false
-        }
+        },
 
         AICondition::HealthAbove(threshold) => {
-            if let Ok(entity_ref) = world.get_entity(entity) {
-                if let Some(unit) = entity_ref.get::<Unit>() {
+            if let Ok(entity_ref) = world.get_entity(entity)
+                && let Some(unit) = entity_ref.get::<Unit>() {
                     return unit.health / unit.max_health > *threshold;
                 }
-            }
             true
-        }
+        },
 
         AICondition::HealthBelow(threshold) => {
-            if let Ok(entity_ref) = world.get_entity(entity) {
-                if let Some(unit) = entity_ref.get::<Unit>() {
+            if let Ok(entity_ref) = world.get_entity(entity)
+                && let Some(unit) = entity_ref.get::<Unit>() {
                     return unit.health / unit.max_health < *threshold;
                 }
-            }
             false
-        }
+        },
 
         AICondition::HasResources(amount) => {
             blackboard.get_float("resources").unwrap_or(0.0) >= *amount as f32
-        }
+        },
 
         AICondition::AlliesNearby(count) => {
             blackboard.get_float("nearby_allies").unwrap_or(0.0) >= *count as f32
-        }
+        },
 
         AICondition::EnemiesNearby(count) => {
             blackboard.get_float("nearby_enemies").unwrap_or(0.0) >= *count as f32
-        }
+        },
 
-        AICondition::AtBase => blackboard.get_bool("at_base").unwrap_or(false),
+        AICondition::AtBase => {
+            blackboard.get_bool("at_base").unwrap_or(false)
+        },
 
-        AICondition::PathClear => !blackboard.get_bool("path_blocked").unwrap_or(false),
+        AICondition::PathClear => {
+            !blackboard.get_bool("path_blocked").unwrap_or(false)
+        },
     }
 }
 
@@ -528,10 +513,8 @@ pub fn behavior_tree_execution_system(
         tree.last_tick = current_time;
 
         // Update blackboard with current entity state
-        tree.blackboard.set(
-            "current_position".to_string(),
-            BlackboardValue::Vec3(transform.translation),
-        );
+        tree.blackboard.set("current_position".to_string(),
+            BlackboardValue::Vec3(transform.translation));
 
         // Execute the behavior tree
         let mut root = tree.root.clone();
@@ -543,10 +526,10 @@ pub fn behavior_tree_execution_system(
             NodeStatus::Success | NodeStatus::Failure => {
                 // Reset for next tick
                 tree.current_path.clear();
-            }
+            },
             NodeStatus::Running => {
                 // Continue execution next tick
-            }
+            },
         }
     }
 }

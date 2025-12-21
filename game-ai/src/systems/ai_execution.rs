@@ -1,7 +1,7 @@
 // AI Execution Systems - handles AI movement, combat, perception and coordination
 use bevy::prelude::*;
+use game_units::{Unit, Team, Leader};
 use game_physics::prelude::*;
-use game_units::{Leader, Team, Unit};
 
 // Events for AI communication
 #[derive(Event, Clone, Debug)]
@@ -75,7 +75,7 @@ pub fn ai_movement_system(
                         },
                     });
                 }
-            }
+            },
             AICommand::Follow(target) => {
                 // Follow logic would go here
                 let target_pos = if let Ok((_, target_transform)) = query.get(*target) {
@@ -84,20 +84,19 @@ pub fn ai_movement_system(
                     None
                 };
 
-                if let Some(pos) = target_pos {
-                    if let Ok((mut controller, _)) = query.get_mut(event.entity) {
+                if let Some(pos) = target_pos
+                    && let Ok((mut controller, _)) = query.get_mut(event.entity) {
                         controller.target_position = Some(pos);
                         controller.is_moving = true;
                     }
-                }
-            }
+            },
             AICommand::Patrol(waypoints) => {
                 if let Ok((mut controller, _)) = query.get_mut(event.entity) {
                     controller.waypoints = waypoints.clone();
                     controller.path_index = 0;
                     controller.is_moving = true;
                 }
-            }
+            },
             _ => {}
         }
     }
@@ -107,29 +106,23 @@ pub fn ai_movement_system(
 pub fn ai_combat_system(
     mut commands: Commands,
     mut ai_command_events: MessageReader<AICommandEvent>,
-    mut query: Query<(&Transform, &Team, &Unit)>,
-    enemy_query: Query<(Entity, &Transform, &Team), With<Unit>>,
+    query: Query<(Entity, &Transform, &Team), With<Unit>>,
 ) {
     for event in ai_command_events.read() {
-        if let AICommand::Attack(target) = event.command {
-            if let Ok((transform, team, _unit)) = query.get(event.entity) {
+        if let AICommand::Attack(target) = event.command
+            && let Ok((_, transform, team)) = query.get(event.entity) {
                 // Find and engage target
-                if let Ok((_, target_transform, target_team)) = enemy_query.get(target) {
-                    if team.id != target_team.id {
+                if let Ok((_, target_transform, target_team)) = query.get(target)
+                    && team.id != target_team.id {
                         // Combat logic would go here
                         let distance = transform.translation.distance(target_transform.translation);
                         if distance < 10.0 {
                             // In range, perform attack
                             #[cfg(feature = "web")]
-                            web_sys::console::log_1(
-                                &format!("AI unit attacking target at distance: {}", distance)
-                                    .into(),
-                            );
+                            web_sys::console::log_1(&format!("AI unit attacking target at distance: {}", distance).into());
                         }
                     }
-                }
             }
-        }
     }
 }
 
@@ -173,10 +166,7 @@ pub fn perception_system(
 pub fn squad_coordination_system(
     mut commands: Commands,
     leader_query: Query<(Entity, &Transform, &Team), With<Leader>>,
-    mut follower_query: Query<
-        (&mut MovementController, &Transform, &Team),
-        (With<Unit>, Without<Leader>),
-    >,
+    mut follower_query: Query<(&mut MovementController, &Transform, &Team), (With<Unit>, Without<Leader>)>,
     mut movement_events: MessageWriter<MovementCommandEvent>,
 ) {
     for (leader_entity, leader_transform, leader_team) in leader_query.iter() {
@@ -199,13 +189,11 @@ pub fn squad_coordination_system(
             let formation_radius = 5.0;
             let angle_step = std::f32::consts::TAU / squad_members.len() as f32;
 
-            // Use a separate index for squad members to calculate correct formation angles
-            let mut squad_member_index = 0;
-            for (mut controller, transform, team) in follower_query.iter_mut() {
+            for (i, (mut controller, transform, team)) in follower_query.iter_mut().enumerate() {
                 if team.id == leader_team.id {
                     let distance = transform.translation.distance(leader_pos);
                     if distance < 15.0 && distance > 3.0 {
-                        let angle = squad_member_index as f32 * angle_step;
+                        let angle = i as f32 * angle_step;
                         let offset = Vec3::new(
                             angle.cos() * formation_radius,
                             0.0,
@@ -215,12 +203,10 @@ pub fn squad_coordination_system(
 
                         controller.target_position = Some(target_pos);
                         controller.is_moving = true;
-                        squad_member_index += 1;
                     }
                 }
             }
         }
     }
-}
-impl bevy::prelude::Message for AICommandEvent {}
+}impl bevy::prelude::Message for AICommandEvent {}
 impl bevy::prelude::Message for AIPerceptionEvent {}

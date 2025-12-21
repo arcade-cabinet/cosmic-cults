@@ -1,6 +1,6 @@
 // Decision Making System - Strategic decision making for AI entities
 use bevy::prelude::*;
-use game_units::{Team, Unit};
+use game_units::{Unit, Team};
 use std::collections::VecDeque;
 
 // Decision maker component for strategic AI decisions
@@ -17,11 +17,11 @@ pub struct DecisionMaker {
 // AI personality affects decision weights
 #[derive(Clone, Debug)]
 pub struct AIPersonality {
-    pub aggression: f32,  // 0.0 = peaceful, 1.0 = very aggressive
-    pub caution: f32,     // 0.0 = reckless, 1.0 = very cautious
-    pub greed: f32,       // 0.0 = content, 1.0 = resource hungry
-    pub loyalty: f32,     // 0.0 = independent, 1.0 = follows orders
-    pub exploration: f32, // 0.0 = stays home, 1.0 = explores map
+    pub aggression: f32,      // 0.0 = peaceful, 1.0 = very aggressive
+    pub caution: f32,         // 0.0 = reckless, 1.0 = very cautious
+    pub greed: f32,           // 0.0 = content, 1.0 = resource hungry
+    pub loyalty: f32,         // 0.0 = independent, 1.0 = follows orders
+    pub exploration: f32,     // 0.0 = stays home, 1.0 = explores map
 }
 
 impl Default for AIPersonality {
@@ -118,27 +118,22 @@ impl DecisionMaker {
         Self::new(AIPersonality::default())
     }
 
-    pub fn update(&mut self, context: &DecisionContext, closest_enemy: Option<Entity>) {
+    pub fn update(&mut self, context: &DecisionContext) {
         // Evaluate available goals and their scores
         let mut goal_scores = Vec::new();
 
         // Score different goals based on context and personality
 
-        // Combat goals - only add if we have an actual enemy target
+        // Combat goals
         if context.nearby_enemies > 0 {
-            if let Some(enemy) = closest_enemy {
-                let attack_score = self.score_attack_goal(context);
-                goal_scores.push((StrategicGoal::EliminateEnemy(enemy), attack_score));
-            }
+            let attack_score = self.score_attack_goal(context);
+            goal_scores.push((StrategicGoal::EliminateEnemy(Entity::PLACEHOLDER), attack_score));
         }
 
         // Defense goals
         if context.threat_level > 0.5 {
             let defend_score = self.score_defend_goal(context);
-            goal_scores.push((
-                StrategicGoal::DefendPosition(context.position),
-                defend_score,
-            ));
+            goal_scores.push((StrategicGoal::DefendPosition(context.position), defend_score));
         }
 
         // Economic goals
@@ -150,18 +145,15 @@ impl DecisionMaker {
         // Exploration goals
         if context.nearby_enemies == 0 && context.threat_level < 0.2 {
             let explore_score = self.score_exploration_goal(context);
-            goal_scores.push((
-                StrategicGoal::ExploreTerrain(Vec3::new(50.0, 0.0, 50.0)),
-                explore_score,
-            ));
+            goal_scores.push((StrategicGoal::ExploreTerrain(Vec3::new(50.0, 0.0, 50.0)), explore_score));
         }
 
-        // Sort goals by score (highest first), treating NaN as lowest value
+        // Sort goals by score
         goal_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Less));
 
         // Select best goal
-        if let Some((goal, score)) = goal_scores.first() {
-            if score > &0.5 {
+        if let Some((goal, score)) = goal_scores.first()
+            && score > &0.5 {
                 self.current_goal = Some(goal.clone());
 
                 // Record decision
@@ -177,7 +169,6 @@ impl DecisionMaker {
                     self.decision_history.remove(0);
                 }
             }
-        }
     }
 
     fn score_attack_goal(&self, context: &DecisionContext) -> f32 {
@@ -278,11 +269,21 @@ impl UtilityScorer {
         personality: &AIPersonality,
     ) -> f32 {
         match action {
-            ActionOption::Attack(target) => Self::score_attack(context, personality),
-            ActionOption::Defend(position) => Self::score_defend(context, personality),
-            ActionOption::Gather => Self::score_gather(context, personality),
-            ActionOption::Explore => Self::score_explore(context, personality),
-            ActionOption::Retreat => Self::score_retreat(context, personality),
+            ActionOption::Attack(target) => {
+                Self::score_attack(context, personality)
+            },
+            ActionOption::Defend(position) => {
+                Self::score_defend(context, personality)
+            },
+            ActionOption::Gather => {
+                Self::score_gather(context, personality)
+            },
+            ActionOption::Explore => {
+                Self::score_explore(context, personality)
+            },
+            ActionOption::Retreat => {
+                Self::score_retreat(context, personality)
+            },
         }
     }
 
@@ -339,13 +340,7 @@ pub enum ActionOption {
 
 // Decision making system
 pub fn decision_system(
-    mut query: Query<(
-        Entity,
-        &mut DecisionMaker,
-        &Transform,
-        Option<&Unit>,
-        Option<&Team>,
-    )>,
+    mut query: Query<(Entity, &mut DecisionMaker, &Transform, Option<&Unit>, Option<&Team>)>,
     enemy_query: Query<(Entity, &Transform, &Team)>,
     time: Res<Time>,
 ) {
@@ -372,29 +367,22 @@ pub fn decision_system(
             time_elapsed: current_time,
         };
 
-        // Count nearby units and find closest enemy
+        // Count nearby units
         let detection_range = 30.0;
-        let mut closest_enemy: Option<(Entity, f32)> = None;
-
-        for (other_entity, other_transform, other_team) in enemy_query.iter() {
-            let distance = transform.translation.distance(other_transform.translation);
+        for (enemy_entity, enemy_transform, enemy_team) in enemy_query.iter() {
+            let distance = transform.translation.distance(enemy_transform.translation);
             if distance <= detection_range {
-                if other_team.id != context.team_id {
+                if enemy_team.id != context.team_id {
                     context.nearby_enemies += 1;
                     context.threat_level += 1.0 / distance.max(1.0);
-
-                    // Track closest enemy
-                    if closest_enemy.is_none() || distance < closest_enemy.unwrap().1 {
-                        closest_enemy = Some((other_entity, distance));
-                    }
                 } else {
                     context.nearby_allies += 1;
                 }
             }
         }
 
-        // Update decision with closest enemy target
-        decision_maker.update(&context, closest_enemy.map(|(e, _)| e));
+        // Update decision
+        decision_maker.update(&context);
     }
 }
 
@@ -407,31 +395,25 @@ pub fn goal_execution_system(
         if let Some(ref goal) = decision_maker.current_goal {
             match goal {
                 StrategicGoal::EliminateEnemy(target) => {
-                    commands
-                        .entity(entity)
-                        .insert(crate::systems::state_machine::AttackBehavior {
-                            target: Some(*target),
-                            aggression_level: decision_maker.personality.aggression,
-                        });
-                }
+                    commands.entity(entity).insert(crate::systems::state_machine::AttackBehavior {
+                        target: Some(*target),
+                        aggression_level: decision_maker.personality.aggression,
+                    });
+                },
 
                 StrategicGoal::DefendPosition(position) => {
-                    commands
-                        .entity(entity)
-                        .insert(crate::systems::state_machine::DefendBehavior {
-                            defend_position: *position,
-                            patrol_radius: 10.0,
-                        });
-                }
+                    commands.entity(entity).insert(crate::systems::state_machine::DefendBehavior {
+                        defend_position: *position,
+                        patrol_radius: 10.0,
+                    });
+                },
 
                 StrategicGoal::GatherResources => {
-                    commands.entity(entity).insert(
-                        crate::systems::state_machine::GatheringBehavior {
-                            target_resource: None,
-                            gathering_rate: 1.0,
-                        },
-                    );
-                }
+                    commands.entity(entity).insert(crate::systems::state_machine::GatheringBehavior {
+                        target_resource: None,
+                        gathering_rate: 1.0,
+                    });
+                },
 
                 StrategicGoal::ExploreTerrain(target) => {
                     commands.entity(entity).insert(game_units::MovementTarget {
@@ -441,9 +423,9 @@ pub fn goal_execution_system(
                         reached: false,
                         speed: 4.0,
                     });
-                }
+                },
 
-                _ => {}
+                _ => {},
             }
         }
     }

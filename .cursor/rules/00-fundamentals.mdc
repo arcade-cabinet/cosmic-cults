@@ -28,9 +28,8 @@ alwaysApply: true
 ## Authentication
 
 ```bash
-# jbcom repos - ALWAYS use CI_GITHUB_TOKEN for all repository operations
-# This is an admin token provided specifically for agent use
-GH_TOKEN="$CI_GITHUB_TOKEN" gh <command>
+# jbcom repos - ALWAYS use this pattern
+GH_TOKEN="$GITHUB_TOKEN" gh <command>
 ```
 
 ## Session Management

@@ -46,13 +46,7 @@ pub trait AIPerception: Send + Sync {
 pub trait AIExecution: Send + Sync {
     fn execute_move(&self, entity: Entity, target: Vec3, commands: &mut Commands);
     fn execute_attack(&self, entity: Entity, target: Entity, commands: &mut Commands);
-    fn execute_build(
-        &self,
-        entity: Entity,
-        building_type: &str,
-        position: Vec3,
-        commands: &mut Commands,
-    );
+    fn execute_build(&self, entity: Entity, building_type: &str, position: Vec3, commands: &mut Commands);
     fn execute_gather(&self, entity: Entity, resource: Entity, commands: &mut Commands);
 }
 
@@ -105,5 +99,4 @@ pub enum AIOrder {
     Build(String, Vec3),
     Follow(Entity),
     Stop,
-}
-impl bevy::prelude::Message for AIMessage {}
+}impl bevy::prelude::Message for AIMessage {}

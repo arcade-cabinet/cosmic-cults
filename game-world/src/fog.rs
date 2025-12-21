@@ -24,16 +24,25 @@ impl Default for FogOfWar {
 /// State of visibility for a tile
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum VisibilityState {
-    Hidden,   // Never seen
-    Revealed, // Seen before but not currently visible
-    Visible,  // Currently visible
+    Hidden,     // Never seen
+    Revealed,   // Seen before but not currently visible
+    Visible,    // Currently visible
 }
 
 /// Resource storing the visibility map for the entire game world
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct VisibilityMap {
     pub tiles: HashMap<(i32, i32), VisibilityState>,
     pub sight_blockers: HashMap<(i32, i32), bool>,
+}
+
+impl Default for VisibilityMap {
+    fn default() -> Self {
+        Self {
+            tiles: HashMap::new(),
+            sight_blockers: HashMap::new(),
+        }
+    }
 }
 
 /// Component marking an entity as a vision provider (units, buildings)
@@ -156,11 +165,7 @@ fn spawn_fog_overlay(
 pub fn update_fog_system(
     mut visibility_map: ResMut<VisibilityMap>,
     vision_providers: Query<(&Transform, &VisionProvider)>,
-    mut fog_overlays: Query<(
-        &FogOverlay,
-        &mut FogOfWar,
-        &MeshMaterial3d<StandardMaterial>,
-    )>,
+    mut fog_overlays: Query<(&FogOverlay, &mut FogOfWar, &MeshMaterial3d<StandardMaterial>)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     time: Res<Time>,
 ) {
@@ -205,9 +210,7 @@ pub fn update_fog_system(
                     tile_z,
                     &visibility_map.sight_blockers,
                 ) {
-                    visibility_map
-                        .tiles
-                        .insert((tile_x, tile_z), VisibilityState::Visible);
+                    visibility_map.tiles.insert((tile_x, tile_z), VisibilityState::Visible);
                 }
             }
         }
@@ -215,10 +218,7 @@ pub fn update_fog_system(
 
     // Update fog overlay visuals
     for (fog_overlay, mut fog, material_handle) in fog_overlays.iter_mut() {
-        if let Some(&visibility_state) = visibility_map
-            .tiles
-            .get(&(fog_overlay.tile_x, fog_overlay.tile_z))
-        {
+        if let Some(&visibility_state) = visibility_map.tiles.get(&(fog_overlay.tile_x, fog_overlay.tile_z)) {
             // Update fog component
             let was_visible = fog.visible;
             fog.revealed = visibility_state != VisibilityState::Hidden;
@@ -309,9 +309,7 @@ pub fn reveal_around_spawn_system(
 
                 let distance = ((dx * dx + dz * dz) as f32).sqrt() * tile_size;
                 if distance <= vision_provider.sight_range {
-                    visibility_map
-                        .tiles
-                        .insert((tile_x, tile_z), VisibilityState::Visible);
+                    visibility_map.tiles.insert((tile_x, tile_z), VisibilityState::Visible);
                 }
             }
         }

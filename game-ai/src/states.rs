@@ -1,8 +1,8 @@
 // AI State Machine - Production-ready state management for AI entities
 use bevy::prelude::*;
-use game_physics::prelude::*;
-use game_units::{Leader, Team, Unit};
 use std::collections::HashMap;
+use game_units::{Unit, Team, Leader};
+use game_physics::prelude::*;
 
 // Core AI state enum - defines all possible states an AI unit can be in
 #[derive(Component, Clone, Debug, PartialEq, Eq, Hash)]
@@ -78,94 +78,37 @@ impl Default for AIStateMachine {
 
         // Define default state transition rules
         // From Idle
-        rules.insert(
-            (AIState::Idle, StateTransitionTrigger::EnemyDetected),
-            AIState::Attacking,
-        );
-        rules.insert(
-            (AIState::Idle, StateTransitionTrigger::OrderReceived),
-            AIState::Following,
-        );
-        rules.insert(
-            (AIState::Idle, StateTransitionTrigger::ResourceFound),
-            AIState::Gathering,
-        );
-        rules.insert(
-            (AIState::Idle, StateTransitionTrigger::TimerExpired),
-            AIState::Patrolling,
-        );
+        rules.insert((AIState::Idle, StateTransitionTrigger::EnemyDetected), AIState::Attacking);
+        rules.insert((AIState::Idle, StateTransitionTrigger::OrderReceived), AIState::Following);
+        rules.insert((AIState::Idle, StateTransitionTrigger::ResourceFound), AIState::Gathering);
+        rules.insert((AIState::Idle, StateTransitionTrigger::TimerExpired), AIState::Patrolling);
 
         // From Patrolling
-        rules.insert(
-            (AIState::Patrolling, StateTransitionTrigger::EnemyDetected),
-            AIState::Attacking,
-        );
-        rules.insert(
-            (AIState::Patrolling, StateTransitionTrigger::AlertRaised),
-            AIState::Searching,
-        );
-        rules.insert(
-            (AIState::Patrolling, StateTransitionTrigger::OrderReceived),
-            AIState::Following,
-        );
+        rules.insert((AIState::Patrolling, StateTransitionTrigger::EnemyDetected), AIState::Attacking);
+        rules.insert((AIState::Patrolling, StateTransitionTrigger::AlertRaised), AIState::Searching);
+        rules.insert((AIState::Patrolling, StateTransitionTrigger::OrderReceived), AIState::Following);
 
         // From Attacking
-        rules.insert(
-            (AIState::Attacking, StateTransitionTrigger::HealthLow),
-            AIState::Fleeing,
-        );
-        rules.insert(
-            (AIState::Attacking, StateTransitionTrigger::TargetDestroyed),
-            AIState::Searching,
-        );
-        rules.insert(
-            (AIState::Attacking, StateTransitionTrigger::EnemyLost),
-            AIState::Searching,
-        );
+        rules.insert((AIState::Attacking, StateTransitionTrigger::HealthLow), AIState::Fleeing);
+        rules.insert((AIState::Attacking, StateTransitionTrigger::TargetDestroyed), AIState::Searching);
+        rules.insert((AIState::Attacking, StateTransitionTrigger::EnemyLost), AIState::Searching);
 
         // From Fleeing
-        rules.insert(
-            (AIState::Fleeing, StateTransitionTrigger::HealthRestored),
-            AIState::Idle,
-        );
-        rules.insert(
-            (AIState::Fleeing, StateTransitionTrigger::EnemyDetected),
-            AIState::Retreating,
-        );
+        rules.insert((AIState::Fleeing, StateTransitionTrigger::HealthRestored), AIState::Idle);
+        rules.insert((AIState::Fleeing, StateTransitionTrigger::EnemyDetected), AIState::Retreating);
 
         // From Following
-        rules.insert(
-            (AIState::Following, StateTransitionTrigger::EnemyDetected),
-            AIState::Attacking,
-        );
-        rules.insert(
-            (AIState::Following, StateTransitionTrigger::OrderReceived),
-            AIState::Idle,
-        );
+        rules.insert((AIState::Following, StateTransitionTrigger::EnemyDetected), AIState::Attacking);
+        rules.insert((AIState::Following, StateTransitionTrigger::OrderReceived), AIState::Idle);
 
         // From Gathering
-        rules.insert(
-            (AIState::Gathering, StateTransitionTrigger::ResourceGathered),
-            AIState::Idle,
-        );
-        rules.insert(
-            (AIState::Gathering, StateTransitionTrigger::EnemyDetected),
-            AIState::Defending,
-        );
+        rules.insert((AIState::Gathering, StateTransitionTrigger::ResourceGathered), AIState::Idle);
+        rules.insert((AIState::Gathering, StateTransitionTrigger::EnemyDetected), AIState::Defending);
 
         // From Searching
-        rules.insert(
-            (AIState::Searching, StateTransitionTrigger::EnemyDetected),
-            AIState::Attacking,
-        );
-        rules.insert(
-            (AIState::Searching, StateTransitionTrigger::TimerExpired),
-            AIState::Patrolling,
-        );
-        rules.insert(
-            (AIState::Searching, StateTransitionTrigger::AllClear),
-            AIState::Idle,
-        );
+        rules.insert((AIState::Searching, StateTransitionTrigger::EnemyDetected), AIState::Attacking);
+        rules.insert((AIState::Searching, StateTransitionTrigger::TimerExpired), AIState::Patrolling);
+        rules.insert((AIState::Searching, StateTransitionTrigger::AllClear), AIState::Idle);
 
         Self {
             current_state: AIState::Idle,
@@ -206,12 +149,12 @@ impl AIStateMachine {
                 if self.state_timer > 5.0 {
                     self.transition(StateTransitionTrigger::TimerExpired);
                 }
-            }
+            },
             AIState::Searching => {
                 if self.state_timer > 10.0 {
                     self.transition(StateTransitionTrigger::TimerExpired);
                 }
-            }
+            },
             _ => {}
         }
     }
@@ -236,13 +179,7 @@ impl AIStateMachine {
 
 // State execution system - handles behavior for each state
 pub fn state_execution_system(
-    mut query: Query<(
-        Entity,
-        &mut AIStateMachine,
-        &Transform,
-        Option<&Unit>,
-        Option<&Team>,
-    )>,
+    mut query: Query<(Entity, &mut AIStateMachine, &Transform, Option<&Unit>, Option<&Team>)>,
     mut movement_events: MessageWriter<MovementCommandEvent>,
     time: Res<Time>,
     mut commands: Commands,
@@ -255,25 +192,25 @@ pub fn state_execution_system(
         match state_machine.current_state {
             AIState::Idle => {
                 execute_idle_state(entity, &state_machine, transform, &mut commands);
-            }
+            },
             AIState::Patrolling => {
                 execute_patrol_state(entity, &mut state_machine, transform, &mut movement_events);
-            }
+            },
             AIState::Attacking => {
                 execute_attack_state(entity, &state_machine, transform, unit, &mut commands);
-            }
+            },
             AIState::Fleeing => {
                 execute_flee_state(entity, &state_machine, transform, &mut movement_events);
-            }
+            },
             AIState::Following => {
                 execute_follow_state(entity, &state_machine, &mut movement_events);
-            }
+            },
             AIState::Gathering => {
                 execute_gather_state(entity, &state_machine, transform, &mut commands);
-            }
+            },
             AIState::Searching => {
                 execute_search_state(entity, &mut state_machine, transform, &mut movement_events);
-            }
+            },
             _ => {}
         }
     }
@@ -286,28 +223,15 @@ fn execute_idle_state(
     transform: &Transform,
     commands: &mut Commands,
 ) {
-    // Idle units occasionally look around - apply rotation once every 3 seconds
-    // by checking if the timer is within a small window after each 3-second interval
-    let look_interval = 3.0;
-    let timer = state_machine.state_timer;
-
-    // Check if we just crossed an interval boundary (within one frame's worth of time)
-    if timer > look_interval {
-        let intervals_passed = (timer / look_interval).floor();
-        let time_since_last_interval = timer - (intervals_passed * look_interval);
-
-        // Apply rotation only during the first frame after crossing an interval
-        // (checking if we're within 0.1 seconds of the interval boundary)
-        if time_since_last_interval < 0.1 {
-            // Vary the rotation based on the interval count to create different look directions
-            let rotation_amount = ((intervals_passed as i32 % 4) as f32 - 1.5) * 0.3;
-            let rotation = Quat::from_rotation_y(rotation_amount);
-            commands.entity(entity).insert(Transform {
-                translation: transform.translation,
-                rotation: transform.rotation * rotation,
-                scale: transform.scale,
-            });
-        }
+    // Idle units occasionally look around
+    if state_machine.state_timer > 3.0 {
+        // Add a small random rotation to simulate looking around
+        let rotation = Quat::from_rotation_y(0.1);
+        commands.entity(entity).insert(Transform {
+            translation: transform.translation,
+            rotation: transform.rotation * rotation,
+            scale: transform.scale,
+        });
     }
 }
 
@@ -348,12 +272,10 @@ fn execute_attack_state(
 ) {
     if let Some(target) = state_machine.state_data.target_entity {
         // Move towards target and attack
-        commands
-            .entity(entity)
-            .insert(crate::systems::state_machine::AttackBehavior {
-                target: Some(target),
-                aggression_level: unit.map(|u| u.attack_damage / 10.0).unwrap_or(1.0),
-            });
+        commands.entity(entity).insert(crate::systems::state_machine::AttackBehavior {
+            target: Some(target),
+            aggression_level: unit.map(|u| u.attack_damage / 10.0).unwrap_or(1.0),
+        });
     }
 }
 
@@ -364,13 +286,10 @@ fn execute_flee_state(
     movement_events: &mut MessageWriter<MovementCommandEvent>,
 ) {
     // Move away from danger towards home position
-    // Use normalize_or_zero to prevent NaN when positions overlap
     let flee_direction = if let Some(enemy_pos) = state_machine.state_data.last_enemy_position {
-        let diff = transform.translation - enemy_pos;
-        diff.normalize_or(Vec3::new(1.0, 0.0, 0.0)) // Default to moving along X if overlapping
+        (transform.translation - enemy_pos).normalize()
     } else {
-        let diff = state_machine.state_data.home_position - transform.translation;
-        diff.normalize_or(Vec3::new(0.0, 0.0, 1.0)) // Default to moving along Z if at home
+        (state_machine.state_data.home_position - transform.translation).normalize()
     };
 
     let flee_position = transform.translation + flee_direction * 20.0;
@@ -407,12 +326,10 @@ fn execute_gather_state(
     commands: &mut Commands,
 ) {
     if let Some(resource) = state_machine.state_data.target_entity {
-        commands
-            .entity(entity)
-            .insert(crate::systems::state_machine::GatheringBehavior {
-                target_resource: Some(resource),
-                gathering_rate: 1.0,
-            });
+        commands.entity(entity).insert(crate::systems::state_machine::GatheringBehavior {
+            target_resource: Some(resource),
+            gathering_rate: 1.0,
+        });
     }
 }
 
@@ -423,16 +340,17 @@ fn execute_search_state(
     movement_events: &mut MessageWriter<MovementCommandEvent>,
 ) {
     // Search in expanding circles from last known enemy position
-    let search_center = state_machine
-        .state_data
-        .last_enemy_position
+    let search_center = state_machine.state_data.last_enemy_position
         .unwrap_or(transform.translation);
 
     let angle = state_machine.state_timer * 0.5;
     let radius = 5.0 + state_machine.state_timer * 2.0;
 
-    let search_position =
-        search_center + Vec3::new(angle.cos() * radius, 0.0, angle.sin() * radius);
+    let search_position = search_center + Vec3::new(
+        angle.cos() * radius,
+        0.0,
+        angle.sin() * radius,
+    );
 
     movement_events.write(MovementCommandEvent {
         entity,
@@ -445,77 +363,53 @@ fn execute_search_state(
 
 // System to trigger state transitions based on game events
 pub fn state_transition_system(
-    mut query: Query<(
-        Entity,
-        &mut AIStateMachine,
-        &Transform,
-        Option<&Unit>,
-        Option<&Team>,
-    )>,
-    other_units_query: Query<(Entity, &Transform, &Team)>,
+    mut query: Query<(Entity, &mut AIStateMachine, &Transform, Option<&Unit>)>,
+    enemy_query: Query<(Entity, &Transform, &Team), Without<AIStateMachine>>,
     time: Res<Time>,
 ) {
-    for (entity, mut state_machine, transform, unit, my_team) in query.iter_mut() {
+    for (entity, mut state_machine, transform, unit) in query.iter_mut() {
         // Check for enemies in detection range
         let detection_range = 15.0;
         let mut enemy_detected = false;
         let mut closest_enemy: Option<(Entity, f32)> = None;
 
-        // Get our team ID, default to 0 if no team component
-        let my_team_id = my_team.map(|t| t.id).unwrap_or(0);
-
-        for (other_entity, other_transform, other_team) in other_units_query.iter() {
-            // Skip self - don't target ourselves
-            if other_entity == entity {
-                continue;
-            }
-
-            // Skip if same team - proper team checking
-            if other_team.id == my_team_id {
-                continue;
-            }
-
-            let distance = transform.translation.distance(other_transform.translation);
+        for (enemy_entity, enemy_transform, enemy_team) in enemy_query.iter() {
+            // Skip if same team (would need proper team checking)
+            let distance = transform.translation.distance(enemy_transform.translation);
 
             if distance < detection_range {
                 enemy_detected = true;
 
                 if closest_enemy.is_none() || distance < closest_enemy.unwrap().1 {
-                    closest_enemy = Some((other_entity, distance));
+                    closest_enemy = Some((enemy_entity, distance));
                 }
             }
         }
 
         // Trigger state transitions based on conditions
-        if enemy_detected && state_machine.current_state != AIState::Attacking {
-            if let Some((enemy, _)) = closest_enemy {
+        if enemy_detected && state_machine.current_state != AIState::Attacking
+            && let Some((enemy, _)) = closest_enemy {
                 state_machine.state_data.target_entity = Some(enemy);
                 state_machine.transition(StateTransitionTrigger::EnemyDetected);
             }
-        }
 
         // Check health for flee trigger
         if let Some(unit) = unit {
-            if unit.health < unit.max_health * 0.3
-                && state_machine.current_state == AIState::Attacking
-            {
+            if unit.health < unit.max_health * 0.3 && state_machine.current_state == AIState::Attacking {
                 state_machine.transition(StateTransitionTrigger::HealthLow);
-            } else if unit.health > unit.max_health * 0.5
-                && state_machine.current_state == AIState::Fleeing
-            {
+            } else if unit.health > unit.max_health * 0.5 && state_machine.current_state == AIState::Fleeing {
                 state_machine.transition(StateTransitionTrigger::HealthRestored);
             }
         }
 
         // Check if target was destroyed
-        if state_machine.current_state == AIState::Attacking {
-            if let Some(target) = state_machine.state_data.target_entity {
+        if state_machine.current_state == AIState::Attacking
+            && let Some(target) = state_machine.state_data.target_entity {
                 // Would need to check if target entity still exists
                 // For now, assume target lost after some time
                 if state_machine.state_timer > 5.0 {
                     state_machine.transition(StateTransitionTrigger::EnemyLost);
                 }
             }
-        }
     }
 }

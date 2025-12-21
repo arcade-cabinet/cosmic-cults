@@ -1,35 +1,26 @@
-use crate::components::*;
 use bevy::prelude::*;
+use crate::components::*;
 
 // ==============================================================================
 // MOVEMENT SYSTEMS
 // ==============================================================================
 
-/// Query type alias for physics movement system
-#[allow(clippy::type_complexity)]
-type PhysicsMovementQuery<'a> = Query<
-    'a,
-    'a,
-    (
-        &'a mut Transform,
-        &'a mut Velocity,
-        &'a Acceleration,
-        Option<&'a Mass>,
-        Option<&'a Friction>,
-    ),
->;
-
 /// Physics-based movement system using velocity and acceleration
-pub fn physics_movement_system(time: Res<Time>, mut query: PhysicsMovementQuery) {
+pub fn physics_movement_system(
+    time: Res<Time>,
+    mut query: Query<(
+        &mut Transform,
+        &mut Velocity,
+        &Acceleration,
+        Option<&Mass>,
+        Option<&Friction>,
+    )>,
+) {
     let dt = time.delta_secs();
 
     for (mut transform, mut velocity, acceleration, mass, friction) in query.iter_mut() {
         let mass_value = mass.map(|m| m.value).unwrap_or(1.0);
-        let inv_mass = if mass_value > 0.0 {
-            1.0 / mass_value
-        } else {
-            0.0
-        };
+        let inv_mass = if mass_value > 0.0 { 1.0 / mass_value } else { 0.0 };
 
         // Apply acceleration (F = ma, so a = F/m)
         velocity.linear += acceleration.linear * inv_mass * dt;
@@ -51,7 +42,7 @@ pub fn physics_movement_system(time: Res<Time>, mut query: PhysicsMovementQuery)
             if angle > 0.0001 {
                 let axis = axis_angle / angle;
                 let rotation_delta = Quat::from_axis_angle(axis, angle);
-                transform.rotation *= rotation_delta;
+                transform.rotation = transform.rotation * rotation_delta;
             }
         }
     }
@@ -81,11 +72,8 @@ pub fn simple_movement_system(
             // Rotate to face movement direction
             if direction.length() > 0.01 {
                 let look_direction = direction.normalize();
-                let target_rotation =
-                    Quat::from_rotation_y(look_direction.x.atan2(look_direction.z));
-                transform.rotation = transform
-                    .rotation
-                    .slerp(target_rotation, 5.0 * time.delta_secs());
+                let target_rotation = Quat::from_rotation_y(look_direction.x.atan2(look_direction.z));
+                transform.rotation = transform.rotation.slerp(target_rotation, 5.0 * time.delta_secs());
             }
         }
     }
@@ -102,9 +90,7 @@ pub fn pathfinding_movement_system(
         // Check if we have a current target
         let current_target = if let Some(target) = controller.target_position {
             target
-        } else if !controller.waypoints.is_empty()
-            && controller.path_index < controller.waypoints.len()
-        {
+        } else if !controller.waypoints.is_empty() && controller.path_index < controller.waypoints.len() {
             // Get next waypoint
             let target = controller.waypoints[controller.path_index];
             controller.target_position = Some(target);
@@ -153,9 +139,7 @@ pub fn pathfinding_movement_system(
         if controller.velocity.length() > 0.1 {
             let look_direction = controller.velocity.normalize();
             let target_rotation = Quat::from_rotation_y(look_direction.x.atan2(look_direction.z));
-            transform.rotation = transform
-                .rotation
-                .slerp(target_rotation, controller.rotation_speed * dt);
+            transform.rotation = transform.rotation.slerp(target_rotation, controller.rotation_speed * dt);
         }
     }
 }
@@ -195,11 +179,8 @@ pub fn waypoint_movement_system(
             // Rotate to face movement direction
             if direction.length() > 0.01 {
                 let look_direction = direction.normalize();
-                let target_rotation =
-                    Quat::from_rotation_y(look_direction.x.atan2(look_direction.z));
-                transform.rotation = transform
-                    .rotation
-                    .slerp(target_rotation, 5.0 * time.delta_secs());
+                let target_rotation = Quat::from_rotation_y(look_direction.x.atan2(look_direction.z));
+                transform.rotation = transform.rotation.slerp(target_rotation, 5.0 * time.delta_secs());
             }
         }
     }
@@ -230,7 +211,7 @@ pub fn formation_movement_system(
             let distance_from_formation = transform.translation.distance(desired_position);
             let urgency = (distance_from_formation / formation.spacing).clamp(0.1, 2.0);
 
-            controller.max_speed *= urgency;
+            controller.max_speed = controller.max_speed * urgency;
         }
     }
 }
@@ -250,9 +231,7 @@ pub fn flocking_system(
 
         // Calculate flocking forces
         for neighbor_transform in neighbor_query.iter() {
-            let distance = transform
-                .translation
-                .distance(neighbor_transform.translation);
+            let distance = transform.translation.distance(neighbor_transform.translation);
 
             if distance > 0.1 && distance < agent.perception_radius {
                 neighbor_count += 1;
@@ -278,9 +257,9 @@ pub fn flocking_system(
             cohesion = (cohesion / neighbor_count as f32 - transform.translation).normalize();
 
             // Combine forces with weights
-            let total_force = separation * agent.separation_weight
-                + alignment * agent.alignment_weight
-                + cohesion * agent.cohesion_weight;
+            let total_force = separation * agent.separation_weight +
+                            alignment * agent.alignment_weight +
+                            cohesion * agent.cohesion_weight;
 
             flocking_forces.push((Entity::PLACEHOLDER, total_force)); // Would need actual entity
         }
@@ -301,8 +280,7 @@ pub fn obstacle_avoidance_system(
         }
 
         let look_ahead_distance = controller.velocity.length() * 2.0; // 2 second look ahead
-        let look_ahead_pos =
-            transform.translation + controller.velocity.normalize() * look_ahead_distance;
+        let look_ahead_pos = transform.translation + controller.velocity.normalize() * look_ahead_distance;
 
         let mut avoidance_force = Vec3::ZERO;
         let mut closest_obstacle_distance = f32::INFINITY;
@@ -390,6 +368,7 @@ impl Default for FlockingAgent {
         }
     }
 }
+
 
 /// Calculate position offset for a unit in formation
 fn calculate_formation_position(

@@ -1,7 +1,7 @@
 // Target Selection and Prioritization System - Smart target selection for AI entities
 use bevy::prelude::*;
+use game_units::{Unit, Team, Leader};
 use game_physics::prelude::*;
-use game_units::{Leader, Team, Unit};
 use std::cmp::Ordering;
 
 // Target selector component for AI entities
@@ -19,13 +19,13 @@ pub struct TargetSelector {
 // Target priority strategies
 #[derive(Clone, Debug, PartialEq)]
 pub enum TargetPriority {
-    Closest,       // Target nearest enemy
-    Weakest,       // Target lowest health enemy
-    Strongest,     // Target highest health enemy
-    MostDangerous, // Target highest damage enemy
-    Leader,        // Prioritize enemy leaders
-    Resource,      // Target resources instead of enemies
-    Balanced,      // Balanced target selection
+    Closest,        // Target nearest enemy
+    Weakest,        // Target lowest health enemy
+    Strongest,      // Target highest health enemy
+    MostDangerous,  // Target highest damage enemy
+    Leader,         // Prioritize enemy leaders
+    Resource,       // Target resources instead of enemies
+    Balanced,       // Balanced target selection
 }
 
 // Target evaluation data
@@ -89,19 +89,21 @@ impl TargetSelector {
 
     fn compare_targets(&self, a: &TargetCandidate, b: &TargetCandidate) -> Ordering {
         match self.priority {
-            TargetPriority::Closest => a
-                .distance
-                .partial_cmp(&b.distance)
-                .unwrap_or(Ordering::Equal),
+            TargetPriority::Closest => {
+                a.distance.partial_cmp(&b.distance).unwrap_or(Ordering::Equal)
+            },
 
-            TargetPriority::Weakest => a.health.partial_cmp(&b.health).unwrap_or(Ordering::Equal),
+            TargetPriority::Weakest => {
+                a.health.partial_cmp(&b.health).unwrap_or(Ordering::Equal)
+            },
 
-            TargetPriority::Strongest => b.health.partial_cmp(&a.health).unwrap_or(Ordering::Equal),
+            TargetPriority::Strongest => {
+                b.health.partial_cmp(&a.health).unwrap_or(Ordering::Equal)
+            },
 
-            TargetPriority::MostDangerous => b
-                .threat_level
-                .partial_cmp(&a.threat_level)
-                .unwrap_or(Ordering::Equal),
+            TargetPriority::MostDangerous => {
+                b.threat_level.partial_cmp(&a.threat_level).unwrap_or(Ordering::Equal)
+            },
 
             TargetPriority::Leader => {
                 if a.is_leader && !b.is_leader {
@@ -109,25 +111,21 @@ impl TargetSelector {
                 } else if !a.is_leader && b.is_leader {
                     Ordering::Greater
                 } else {
-                    a.distance
-                        .partial_cmp(&b.distance)
-                        .unwrap_or(Ordering::Equal)
+                    a.distance.partial_cmp(&b.distance).unwrap_or(Ordering::Equal)
                 }
-            }
+            },
 
             TargetPriority::Resource => {
                 // Resources would be handled separately
-                a.distance
-                    .partial_cmp(&b.distance)
-                    .unwrap_or(Ordering::Equal)
-            }
+                a.distance.partial_cmp(&b.distance).unwrap_or(Ordering::Equal)
+            },
 
             TargetPriority::Balanced => {
                 // Balanced scoring
                 let a_score = self.calculate_balanced_score(a);
                 let b_score = self.calculate_balanced_score(b);
                 b_score.partial_cmp(&a_score).unwrap_or(Ordering::Equal)
-            }
+            },
         }
     }
 
@@ -149,10 +147,10 @@ impl TargetSelector {
         match self.priority {
             TargetPriority::Closest => {
                 new_candidate.distance < 5.0 // Switch if very close enemy appears
-            }
+            },
             TargetPriority::Leader => {
                 new_candidate.is_leader && new_candidate.distance < self.max_range * 0.5
-            }
+            },
             _ => false,
         }
     }
@@ -180,14 +178,13 @@ pub fn target_acquisition_system(
         // Check if it's time to reacquire target
         if current_time - selector.last_target_check < selector.reacquisition_time {
             // Check if current target still exists and is valid
-            if let Some(target) = selector.current_target {
-                if let Ok((_, target_transform, _, target_unit, _)) = enemy_query.get(target) {
+            if let Some(target) = selector.current_target
+                && let Ok((_, target_transform, _, target_unit, _)) = enemy_query.get(target) {
                     let distance = transform.translation.distance(target_transform.translation);
                     if distance <= selector.max_range && target_unit.health > 0.0 {
                         continue; // Keep current target
                     }
                 }
-            }
         }
 
         // Build list of target candidates
@@ -196,9 +193,7 @@ pub fn target_acquisition_system(
         if selector.priority == TargetPriority::Resource {
             // Look for resources
             for (resource_entity, resource_transform) in resource_query.iter() {
-                let distance = transform
-                    .translation
-                    .distance(resource_transform.translation);
+                let distance = transform.translation.distance(resource_transform.translation);
 
                 if distance <= selector.max_range {
                     candidates.push(TargetCandidate {
@@ -216,9 +211,7 @@ pub fn target_acquisition_system(
             }
         } else {
             // Look for enemies
-            for (enemy_entity, enemy_transform, enemy_team, enemy_unit, leader) in
-                enemy_query.iter()
-            {
+            for (enemy_entity, enemy_transform, enemy_team, enemy_unit, leader) in enemy_query.iter() {
                 // Skip same team
                 if enemy_team.id == team.id {
                     continue;
@@ -271,11 +264,10 @@ pub fn target_validation_system(
     let valid_entities: Vec<Entity> = entity_query.iter().collect();
 
     for mut selector in query.iter_mut() {
-        if let Some(target) = selector.current_target {
-            if !valid_entities.contains(&target) {
+        if let Some(target) = selector.current_target
+            && !valid_entities.contains(&target) {
                 selector.clear_target();
             }
-        }
     }
 }
 
@@ -286,8 +278,8 @@ pub fn line_of_sight_system(
     obstacle_query: Query<(&Transform, &CollisionMask), Without<Unit>>,
 ) {
     for (mut selector, transform) in query.iter_mut() {
-        if let Some(target) = selector.current_target {
-            if let Ok(target_transform) = target_query.get(target) {
+        if let Some(target) = selector.current_target
+            && let Ok(target_transform) = target_query.get(target) {
                 // Check if line of sight is blocked
                 if is_line_of_sight_blocked(
                     transform.translation,
@@ -298,7 +290,6 @@ pub fn line_of_sight_system(
                     selector.clear_target();
                 }
             }
-        }
     }
 }
 
@@ -337,17 +328,15 @@ pub fn target_prediction_system(
     target_query: Query<(&Transform, &Velocity), Without<TargetSelector>>,
 ) {
     for (mut selector, transform) in query.iter_mut() {
-        if let Some(target) = selector.current_target {
-            if let Ok((target_transform, target_velocity)) = target_query.get(target) {
+        if let Some(target) = selector.current_target
+            && let Ok((target_transform, target_velocity)) = target_query.get(target) {
                 // Predict where target will be
-                let time_to_intercept =
-                    transform.translation.distance(target_transform.translation) / 10.0;
-                let predicted_position =
-                    target_transform.translation + target_velocity.linear * time_to_intercept;
+                let time_to_intercept = transform.translation.distance(target_transform.translation) / 10.0;
+                let predicted_position = target_transform.translation +
+                    target_velocity.linear * time_to_intercept;
 
                 selector.target_position = Some(predicted_position);
             }
-        }
     }
 }
 

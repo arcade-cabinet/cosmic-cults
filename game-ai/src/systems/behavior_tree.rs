@@ -133,12 +133,7 @@ pub enum NodeStatus {
 }
 
 impl BehaviorNode {
-    pub fn tick(
-        &mut self,
-        blackboard: &mut Blackboard,
-        entity: Entity,
-        world: &World,
-    ) -> NodeStatus {
+    pub fn tick(&mut self, blackboard: &mut Blackboard, entity: Entity, world: &World) -> NodeStatus {
         match self {
             BehaviorNode::Sequence(children) => {
                 for child in children.iter_mut() {
@@ -149,7 +144,7 @@ impl BehaviorNode {
                     }
                 }
                 NodeStatus::Success
-            }
+            },
 
             BehaviorNode::Selector(children) => {
                 for child in children.iter_mut() {
@@ -160,7 +155,7 @@ impl BehaviorNode {
                     }
                 }
                 NodeStatus::Failure
-            }
+            },
 
             BehaviorNode::Parallel(children, min_success) => {
                 let mut success_count = 0;
@@ -170,7 +165,7 @@ impl BehaviorNode {
                     match child.tick(blackboard, entity, world) {
                         NodeStatus::Success => success_count += 1,
                         NodeStatus::Running => has_running = true,
-                        NodeStatus::Failure => {}
+                        NodeStatus::Failure => {},
                     }
                 }
 
@@ -181,12 +176,14 @@ impl BehaviorNode {
                 } else {
                     NodeStatus::Failure
                 }
-            }
+            },
 
-            BehaviorNode::Inverter(child) => match child.tick(blackboard, entity, world) {
-                NodeStatus::Success => NodeStatus::Failure,
-                NodeStatus::Failure => NodeStatus::Success,
-                NodeStatus::Running => NodeStatus::Running,
+            BehaviorNode::Inverter(child) => {
+                match child.tick(blackboard, entity, world) {
+                    NodeStatus::Success => NodeStatus::Failure,
+                    NodeStatus::Failure => NodeStatus::Success,
+                    NodeStatus::Running => NodeStatus::Running,
+                }
             },
 
             BehaviorNode::Repeater(child, times) => {
@@ -196,19 +193,21 @@ impl BehaviorNode {
                     }
                 }
                 NodeStatus::Success
-            }
+            },
 
             BehaviorNode::Succeeder(child) => {
                 child.tick(blackboard, entity, world);
                 NodeStatus::Success
-            }
+            },
 
             BehaviorNode::Failer(child) => {
                 child.tick(blackboard, entity, world);
                 NodeStatus::Failure
-            }
+            },
 
-            BehaviorNode::Action(action) => execute_action(action, blackboard, entity, world),
+            BehaviorNode::Action(action) => {
+                execute_action(action, blackboard, entity, world)
+            },
 
             BehaviorNode::Condition(condition) => {
                 if check_condition(condition, blackboard, entity, world) {
@@ -216,7 +215,7 @@ impl BehaviorNode {
                 } else {
                     NodeStatus::Failure
                 }
-            }
+            },
         }
     }
 }
@@ -236,7 +235,7 @@ fn execute_action(
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
         ActionType::Attack => {
             if let Some(_target) = blackboard.get_entity("attack_target") {
                 // Attack target
@@ -244,27 +243,27 @@ fn execute_action(
             } else {
                 NodeStatus::Failure
             }
-        }
+        },
         ActionType::Build => {
             // Execute build action
             NodeStatus::Running
-        }
+        },
         ActionType::Gather => {
             // Execute gather action
             NodeStatus::Running
-        }
+        },
         ActionType::Patrol => {
             // Execute patrol action
             NodeStatus::Running
-        }
+        },
         ActionType::Wait => {
             // Wait for specified duration
             NodeStatus::Success
-        }
+        },
         ActionType::Custom(_) => {
             // Custom action implementation
             NodeStatus::Success
-        }
+        },
     }
 }
 
@@ -276,15 +275,25 @@ fn check_condition(
     _world: &World,
 ) -> bool {
     match &condition.condition_type {
-        ConditionType::HasTarget => blackboard.get_entity("target").is_some(),
-        ConditionType::HasResources => blackboard.get_float("resources").unwrap_or(0.0) > 100.0,
-        ConditionType::IsHealthy => blackboard.get_float("health").unwrap_or(0.0) > 50.0,
-        ConditionType::IsUnderAttack => blackboard.get_bool("under_attack").unwrap_or(false),
-        ConditionType::CanBuild => blackboard.get_bool("can_build").unwrap_or(false),
+        ConditionType::HasTarget => {
+            blackboard.get_entity("target").is_some()
+        },
+        ConditionType::HasResources => {
+            blackboard.get_float("resources").unwrap_or(0.0) > 100.0
+        },
+        ConditionType::IsHealthy => {
+            blackboard.get_float("health").unwrap_or(0.0) > 50.0
+        },
+        ConditionType::IsUnderAttack => {
+            blackboard.get_bool("under_attack").unwrap_or(false)
+        },
+        ConditionType::CanBuild => {
+            blackboard.get_bool("can_build").unwrap_or(false)
+        },
         ConditionType::Custom(_) => {
             // Custom condition implementation
             true
-        }
+        },
     }
 }
 
@@ -293,9 +302,17 @@ pub struct BehaviorTreeBuilder {
     nodes: Vec<Box<BehaviorNode>>,
 }
 
+impl Default for BehaviorTreeBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BehaviorTreeBuilder {
     pub fn new() -> Self {
-        Self { nodes: Vec::new() }
+        Self {
+            nodes: Vec::new(),
+        }
     }
 
     pub fn sequence(mut self) -> Self {
@@ -331,12 +348,10 @@ impl BehaviorTreeBuilder {
     pub fn build(self) -> BehaviorTree {
         BehaviorTree {
             root: self.nodes.into_iter().next().unwrap_or_else(|| {
-                Box::new(BehaviorNode::Succeeder(Box::new(BehaviorNode::Action(
-                    ActionNode {
-                        action_type: ActionType::Wait,
-                        name: "default".to_string(),
-                    },
-                ))))
+                Box::new(BehaviorNode::Succeeder(Box::new(BehaviorNode::Action(ActionNode {
+                    action_type: ActionType::Wait,
+                    name: "default".to_string(),
+                }))))
             }),
             blackboard: Blackboard::default(),
             tick_rate: 1.0,

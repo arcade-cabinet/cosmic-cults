@@ -1,5 +1,5 @@
-use ahash::HashMap;
 use bevy::prelude::*;
+use ahash::HashMap;
 use std::collections::HashSet;
 use wasm_bindgen::prelude::*;
 
@@ -46,7 +46,10 @@ impl SpatialGrid {
         }
 
         // Insert into new cell
-        self.cells.entry(cell_coord).or_default().push(entity);
+        self.cells
+            .entry(cell_coord)
+            .or_insert_with(Vec::new)
+            .push(entity);
 
         self.entity_positions.insert(entity, cell_coord);
     }
@@ -87,13 +90,17 @@ impl SpatialGrid {
     pub fn query_cell(&self, cell_x: i32, cell_z: i32) -> Vec<Entity> {
         self.cells
             .get(&(cell_x, cell_z))
-            .cloned()
+            .map(|entities| entities.clone())
             .unwrap_or_default()
     }
 
     /// Get all entities in the grid
     pub fn get_all_entities(&self) -> Vec<Entity> {
-        self.cells.values().flatten().cloned().collect()
+        self.cells
+            .values()
+            .flatten()
+            .cloned()
+            .collect()
     }
 
     /// Get the cell coordinate for a world position
@@ -173,7 +180,7 @@ impl WasmSpatialGrid {
 
         self.cells
             .entry((cell_x, cell_z))
-            .or_default()
+            .or_insert_with(Vec::new)
             .push(entity_id);
     }
 
@@ -242,12 +249,18 @@ impl SpatialHash {
 
     pub fn insert(&mut self, entity: Entity, position: Vec3) {
         let key = self.hash_position(position.x, position.z);
-        self.hash_map.entry(key).or_default().push(entity);
+        self.hash_map
+            .entry(key)
+            .or_insert_with(Vec::new)
+            .push(entity);
     }
 
     pub fn query_cell(&self, position: Vec3) -> Vec<Entity> {
         let key = self.hash_position(position.x, position.z);
-        self.hash_map.get(&key).cloned().unwrap_or_default()
+        self.hash_map
+            .get(&key)
+            .map(|entities| entities.clone())
+            .unwrap_or_default()
     }
 
     pub fn clear(&mut self) {
