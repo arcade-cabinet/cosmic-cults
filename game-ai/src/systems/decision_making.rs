@@ -102,6 +102,7 @@ impl AIDecisionMaker {
         resources: &TeamResources,
         unit_count: usize,
         building_count: usize,
+        current_time: f32,
     ) {
         self.evaluation_scores.clear();
 
@@ -153,16 +154,16 @@ impl AIDecisionMaker {
 
         // Add decisions to queue
         for (decision_type, score) in decisions_to_add {
-            self.add_decision(decision_type, score);
+            self.add_decision(decision_type, score, current_time);
         }
     }
 
-    pub fn add_decision(&mut self, decision_type: DecisionType, priority: f32) {
+    pub fn add_decision(&mut self, decision_type: DecisionType, priority: f32, current_time: f32) {
         let decision = AIDecision {
             decision_type,
             priority,
-            timestamp: 0.0,   // Would use actual time
-            expires_at: 30.0, // 30 second expiration
+            timestamp: current_time,
+            expires_at: current_time + 30.0, // 30 second expiration from now
         };
 
         // Insert based on priority
@@ -409,7 +410,7 @@ pub fn decision_making_system(
             let building_count = 1; // Would count actual buildings
 
             // Evaluate new decisions
-            decision_maker.evaluate_options(&priorities, &resources, unit_count, building_count);
+            decision_maker.evaluate_options(&priorities, &resources, unit_count, building_count, current_time);
             decision_maker.last_decision_time = current_time;
         }
 
