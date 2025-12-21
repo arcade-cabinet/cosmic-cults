@@ -410,7 +410,13 @@ pub fn decision_making_system(
             let building_count = 1; // Would count actual buildings
 
             // Evaluate new decisions
-            decision_maker.evaluate_options(&priorities, &resources, unit_count, building_count, current_time);
+            decision_maker.evaluate_options(
+                &priorities,
+                &resources,
+                unit_count,
+                building_count,
+                current_time,
+            );
             decision_maker.last_decision_time = current_time;
         }
 
