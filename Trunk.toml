@@ -1,0 +1,22 @@
+# Trunk build configuration for WASM
+# See: https://trunkrs.dev/
+
+[build]
+target = "index.html"
+release = false
+dist = "dist"
+public_url = "/"
+
+[watch]
+# Watch these paths for changes
+watch = ["game-runner/src", "game-physics/src", "game-units/src", "game-world/src", "game-ai/src", "game-combat/src", "game-assets/src"]
+ignore = ["target", "dist"]
+
+[serve]
+address = "0.0.0.0"
+port = 8080
+open = false
+
+# WASM optimization settings
+[build.target]
+wasm-opt = ["-O3", "--enable-reference-types"]

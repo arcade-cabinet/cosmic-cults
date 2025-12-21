@@ -2020,6 +2020,7 @@ dependencies = [
  "game-physics",
  "game-units",
  "game-world",
+ "rand",
 ]
 
 [[package]]
