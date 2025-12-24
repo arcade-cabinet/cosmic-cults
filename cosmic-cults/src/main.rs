@@ -1,14 +1,7 @@
-mod ai;
-mod assets;
-mod units;
-mod world;
-
 use bevy::prelude::*;
 use bevy_combat::GameCombatPlugin;
-use ai::GameAIPlugin;
+use cosmic_cults::{GameAIPlugin, GameUnitsPlugin, GameWorldPlugin};
 use game_physics::GamePhysicsPlugin;
-use units::GameUnitsPlugin;
-use world::GameWorldPlugin;
 
 fn main() {
     App::new()

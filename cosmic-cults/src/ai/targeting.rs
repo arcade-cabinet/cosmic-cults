@@ -1,7 +1,7 @@
 // Target Selection and Prioritization System - Smart target selection for AI entities
+use crate::units::{Leader, Team, Unit};
 use bevy::prelude::*;
 use game_physics::prelude::*;
-use crate::units::{Leader, Team, Unit};
 use std::cmp::Ordering;
 
 // Target selector component for AI entities

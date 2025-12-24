@@ -1,6 +1,6 @@
 // Decision Making System - Strategic decision making for AI entities
-use bevy::prelude::*;
 use crate::units::{Team, Unit};
+use bevy::prelude::*;
 use std::collections::VecDeque;
 
 // Decision maker component for strategic AI decisions
@@ -429,13 +429,15 @@ pub fn goal_execution_system(
                 }
 
                 StrategicGoal::ExploreTerrain(target) => {
-                    commands.entity(entity).insert(crate::units::MovementTarget {
-                        x: target.x,
-                        y: target.y,
-                        z: target.z,
-                        reached: false,
-                        speed: 4.0,
-                    });
+                    commands
+                        .entity(entity)
+                        .insert(crate::units::MovementTarget {
+                            x: target.x,
+                            y: target.y,
+                            z: target.z,
+                            reached: false,
+                            speed: 4.0,
+                        });
                 }
 
                 _ => {}

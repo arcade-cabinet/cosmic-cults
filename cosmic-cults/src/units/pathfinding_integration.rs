@@ -1,9 +1,9 @@
 use crate::units::{Team, Unit};
+use crate::world::{GameMap, PathfindingGrid, find_path, grid_to_world, world_to_grid};
 use bevy::prelude::*;
 use game_physics::{
     AABB, MovementCommand, MovementCommandEvent, MovementController, Obstacle, Velocity,
 };
-use crate::units::world::{GameMap, PathfindingGrid, find_path};
 
 // ==============================================================================
 // PATHFINDING INTEGRATION
@@ -26,10 +26,11 @@ pub fn pathfinding_request_system(
 
                     // Find path using A* from game-world
                     if let Some(grid_path) = find_path(start_grid, goal_grid, &pathfinding_grid) {
+                        let grid_path: Vec<(i32, i32)> = grid_path;
                         // Convert grid path to world waypoints
                         let waypoints: Vec<Vec3> = grid_path
                             .iter()
-                            .map(|&(x, z)| grid_to_world((x, z), game_map.tile_size))
+                            .map(|&(x, z)| grid_to_world(x, z, game_map.tile_size))
                             .collect();
 
                         // Update controller with path
@@ -87,11 +88,11 @@ pub fn update_pathfinding_obstacles(
     // First, reset all tiles to their default walkability
     for (&grid_pos, tile_info) in &game_map.tiles {
         let walkable = match tile_info.tile_type {
-            crate::units::world::map::TileType::Ground => true,
-            crate::units::world::map::TileType::Bridge => true,
-            crate::units::world::map::TileType::Water => false,
-            crate::units::world::map::TileType::Cliff => false,
-            crate::units::world::map::TileType::Void => tile_info.corruption_level < 0.9,
+            crate::world::map::TileType::Ground => true,
+            crate::world::map::TileType::Bridge => true,
+            crate::world::map::TileType::Water => false,
+            crate::world::map::TileType::Cliff => false,
+            crate::world::map::TileType::Void => tile_info.corruption_level < 0.9,
         };
         pathfinding_grid.walkable.insert(grid_pos, walkable);
     }
@@ -178,23 +179,6 @@ pub fn formation_pathfinding_system(
 // ==============================================================================
 // HELPER FUNCTIONS
 // ==============================================================================
-
-/// Convert world position to grid coordinates
-pub fn world_to_grid(world_pos: Vec3, tile_size: f32) -> (i32, i32) {
-    (
-        (world_pos.x / tile_size).round() as i32,
-        (world_pos.z / tile_size).round() as i32,
-    )
-}
-
-/// Convert grid coordinates to world position
-pub fn grid_to_world(grid_pos: (i32, i32), tile_size: f32) -> Vec3 {
-    Vec3::new(
-        grid_pos.0 as f32 * tile_size,
-        0.0,
-        grid_pos.1 as f32 * tile_size,
-    )
-}
 
 /// Smooth path by removing unnecessary waypoints
 pub fn smooth_path(

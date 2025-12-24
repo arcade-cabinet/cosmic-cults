@@ -1,11 +1,11 @@
 //! World entity spawning system for Cosmic Dominion
 
+use crate::assets::{Cult, models};
 use crate::world::fog::{Faction, VisionProvider};
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::Indices;
 use bevy::prelude::*;
 use bevy::render::render_resource::PrimitiveTopology;
-use crate::world::assets::{Cult, models};
 use tracing::info;
 
 /// Marker component for the cult leader

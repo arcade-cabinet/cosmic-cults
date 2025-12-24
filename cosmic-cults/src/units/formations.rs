@@ -1,4 +1,6 @@
-use crate::units::{Formation, FormationType, Leader, MovementPath, MovementTarget, Selected, Unit};
+use crate::units::{
+    Formation, FormationType, Leader, MovementPath, MovementTarget, Selected, Unit,
+};
 use bevy::prelude::*;
 #[cfg(feature = "web")]
 use web_sys::console;

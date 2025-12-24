@@ -4,9 +4,8 @@
 //! Run with: cargo run --example formations
 
 use bevy::prelude::*;
+use cosmic_cults::{GameUnitsPlugin, GameWorldPlugin};
 use game_physics::GamePhysicsPlugin;
-use game_units::GameUnitsPlugin;
-use game_world::GameWorldPlugin;
 
 fn main() {
     App::new()

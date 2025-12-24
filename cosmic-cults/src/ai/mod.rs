@@ -1,9 +1,9 @@
 // Game AI crate - Game-specific AI systems for Cosmic Cults
 #![allow(unused)]
 
+use crate::units::{Leader, Team, Unit};
 use bevy::prelude::*;
 use game_physics::prelude::*;
-use crate::units::{Leader, Team, Unit};
 use std::collections::HashMap;
 
 // Re-export the generic AI toolkit for convenience
@@ -136,9 +136,9 @@ fn any_ai_entities_exist(
     ai_query: Query<
         (),
         Or<(
-            With<AIStateMachine>,                 // Toolkit state machine
+            With<AIStateMachine>,                     // Toolkit state machine
             With<crate::ai::states::AIStateMachine>,  // Game-specific state machine
-            With<BehaviorTree>,                   // Toolkit behavior tree
+            With<BehaviorTree>,                       // Toolkit behavior tree
             With<crate::ai::behaviors::BehaviorTree>, // Game-specific behavior tree
             With<UtilityAI>,
             With<AIDecisionMaker>,

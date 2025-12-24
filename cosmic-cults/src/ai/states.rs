@@ -1,7 +1,7 @@
 // AI State Machine - Production-ready state management for AI entities
+use crate::units::{Leader, Team, Unit};
 use bevy::prelude::*;
 use game_physics::prelude::*;
-use crate::units::{Leader, Team, Unit};
 use std::collections::HashMap;
 
 // Core AI state enum - defines all possible states an AI unit can be in

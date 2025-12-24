@@ -12,7 +12,7 @@ pub mod spawning;
 pub mod terrain;
 
 pub use fog::{Faction, FogOfWar, VisibilityMap, VisionProvider};
-pub use map::{GameMap, MapTile, PathfindingGrid, find_path};
+pub use map::{GameMap, MapTile, PathfindingGrid, find_path, grid_to_world, world_to_grid};
 pub use spawning::{CultLeader, InitialCreature, LeadershipBuilding, PlayerUnit, Totem};
 pub use terrain::{BiomeType, TerrainConfig, TerrainTile};
 
