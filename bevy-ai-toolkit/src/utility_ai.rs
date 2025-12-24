@@ -1,7 +1,12 @@
+//! Generic utility AI implementation for decision-making
+//!
+//! This module provides a utility-based AI system that scores actions based on
+//! considerations and response curves, then selects the highest-scoring action.
+
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-// Utility AI component
+/// Utility AI component
 #[derive(Component, Clone, Debug)]
 pub struct UtilityAI {
     pub considerations: Vec<Consideration>,
@@ -11,7 +16,7 @@ pub struct UtilityAI {
     pub last_update: f32,
 }
 
-// Consideration for scoring
+/// Consideration for scoring actions
 #[derive(Clone, Debug)]
 pub struct Consideration {
     pub name: String,
@@ -20,6 +25,7 @@ pub struct Consideration {
     pub weight: f32,
 }
 
+/// Input types for considerations
 #[derive(Clone, Debug)]
 pub enum InputType {
     Health,
@@ -30,6 +36,7 @@ pub enum InputType {
     Custom(String),
 }
 
+/// Response curve for mapping input values to scores
 pub enum ResponseCurve {
     Linear,
     Quadratic,
@@ -60,7 +67,7 @@ impl Clone for ResponseCurve {
             Self::Exponential => Self::Exponential,
             Self::Logarithmic => Self::Logarithmic,
             Self::Sigmoid => Self::Sigmoid,
-            Self::Custom(_) => Self::Linear, // Fallback to Linear for custom functions
+            Self::Custom(_) => Self::Linear, // Fallback for custom functions
         }
     }
 }
@@ -83,7 +90,7 @@ impl ResponseCurve {
     }
 }
 
-// Utility action
+/// Utility action that can be selected by the AI
 #[derive(Clone, Debug)]
 pub struct UtilityAction {
     pub name: String,
@@ -92,6 +99,7 @@ pub struct UtilityAction {
     pub base_score: f32,
 }
 
+/// Generic action types for utility AI
 #[derive(Clone, Debug)]
 pub enum UtilityActionType {
     Attack,
@@ -105,7 +113,7 @@ pub enum UtilityActionType {
     Custom(String),
 }
 
-// Utility score
+/// Score result for a utility action
 #[derive(Clone, Debug)]
 pub struct UtilityScore {
     pub action_index: usize,
@@ -191,7 +199,7 @@ impl UtilityAI {
     }
 }
 
-// Context for utility evaluation
+/// Context for utility evaluation
 #[derive(Clone, Debug)]
 pub struct UtilityContext {
     pub health_percentage: f32,
@@ -226,7 +234,7 @@ fn get_input_value(input_type: &InputType, context: &UtilityContext) -> f32 {
     }
 }
 
-// Preset AI personalities using utility AI
+/// Create an aggressive AI preset
 pub fn create_aggressive_ai() -> UtilityAI {
     let mut ai = UtilityAI::new();
 
@@ -263,6 +271,7 @@ pub fn create_aggressive_ai() -> UtilityAI {
     ai
 }
 
+/// Create an economic AI preset
 pub fn create_economic_ai() -> UtilityAI {
     let mut ai = UtilityAI::new();
 
@@ -306,15 +315,15 @@ pub fn create_economic_ai() -> UtilityAI {
     ai
 }
 
-// Utility AI system that processes UtilityAI components
+/// Utility AI system that processes UtilityAI components
+/// Note: This is a basic implementation. Games should override this with their own logic.
 pub fn utility_ai_system(
     time: Res<Time>,
-    mut query: Query<(Entity, &mut UtilityAI, &Transform), With<UtilityAI>>,
-    mut commands: Commands,
+    mut query: Query<(Entity, &mut UtilityAI), With<UtilityAI>>,
 ) {
     let current_time = time.elapsed_secs();
 
-    for (entity, mut utility_ai, transform) in query.iter_mut() {
+    for (_entity, mut utility_ai) in query.iter_mut() {
         // Check if it's time to update this AI
         if current_time - utility_ai.last_update < utility_ai.update_interval {
             continue;
@@ -322,60 +331,37 @@ pub fn utility_ai_system(
 
         utility_ai.last_update = current_time;
 
-        // Create utility context from current state
-        let context = UtilityContext {
-            health_percentage: 1.0, // Would get from health component
-            resource_amount: 100.0, // Would get from resource component
-            enemy_distance: 50.0,   // Would get from nearby enemy detection
-            allied_unit_count: 1.0, // Would count nearby allied units
-            time_elapsed: current_time,
-            custom_values: std::collections::HashMap::new(),
-        };
+        // Create default utility context
+        // Games should override this system to provide proper context
+        let context = UtilityContext::default();
 
         // Select best action based on utility scoring
-        if let Some(selected_action) = utility_ai.select_action(&context) {
-            // Convert utility action to behavior component
-            match &selected_action.action_type {
-                UtilityActionType::Attack => {
-                    commands.entity(entity).insert(crate::AttackBehavior {
-                        target: None, // Would need target detection
-                        aggression_level: 0.8,
-                    });
-                }
-                UtilityActionType::Defend => {
-                    commands.entity(entity).insert(crate::DefendBehavior {
-                        defend_position: transform.translation,
-                        patrol_radius: 10.0,
-                    });
-                }
-                UtilityActionType::Gather => {
-                    commands.entity(entity).insert(crate::GatheringBehavior {
-                        target_resource: None, // Would need resource detection
-                        gathering_rate: 1.0,
-                    });
-                }
-                UtilityActionType::Build => {
-                    // Add building behavior when we have building system
-                }
-                UtilityActionType::Explore => {
-                    // Add exploration behavior
-                }
-                UtilityActionType::Retreat => {
-                    commands.entity(entity).insert(crate::RetreatBehavior {
-                        safe_position: Some(transform.translation + Vec3::new(-20.0, 0.0, -20.0)),
-                        retreat_threshold: 0.3,
-                    });
-                }
-                UtilityActionType::Trade => {
-                    // Add trade behavior when we have trade system
-                }
-                UtilityActionType::Research => {
-                    // Add research behavior when we have research system
-                }
-                UtilityActionType::Custom(_) => {
-                    // Handle custom action types
-                }
-            }
-        }
+        let _selected_action = utility_ai.select_action(&context);
+        // Games should handle the selected action
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_response_curves() {
+        assert_eq!(ResponseCurve::Linear.evaluate(0.5), 0.5);
+        assert_eq!(ResponseCurve::Quadratic.evaluate(0.5), 0.25);
+    }
+
+    #[test]
+    fn test_utility_ai_creation() {
+        let ai = create_aggressive_ai();
+        assert_eq!(ai.actions.len(), 2);
+        assert_eq!(ai.considerations.len(), 2);
+    }
+
+    #[test]
+    fn test_utility_context() {
+        let context = UtilityContext::default();
+        assert_eq!(context.health_percentage, 1.0);
+        assert_eq!(context.enemy_distance, 100.0);
     }
 }

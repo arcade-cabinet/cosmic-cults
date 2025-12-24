@@ -11,6 +11,9 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+# Generic AI toolkit
+bevy-ai-toolkit = { path = "../bevy-ai-toolkit" }
+
 # Core Bevy engine (minimal features for AI systems)
 bevy = { workspace = true, default-features = false }
 

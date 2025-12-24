@@ -1,4 +1,4 @@
-// Game AI crate - Production-ready AI systems for Cosmic Dominion
+// Game AI crate - Game-specific AI systems for Cosmic Cults
 #![allow(unused)]
 
 use bevy::prelude::*;
@@ -6,10 +6,14 @@ use game_physics::prelude::*;
 use game_units::{Leader, Team, Unit};
 use std::collections::HashMap;
 
-// Core modules
+// Re-export the generic AI toolkit for convenience
+pub use bevy_ai_toolkit::prelude::*;
+
+// Game-specific modules
 pub mod behaviors;
 pub mod cult_profiles;
 pub mod decision;
+pub mod game_behaviors;
 pub mod states;
 pub mod systems;
 pub mod targeting;
@@ -18,23 +22,16 @@ pub mod types;
 #[cfg(test)]
 pub mod integration_test;
 
-// Public re-exports for easy access - specific imports to avoid conflicts
-pub use behaviors::{BehaviorNode, BehaviorTree, Blackboard, BlackboardValue, NodeStatus};
+// Public re-exports for game-specific components
 pub use cult_profiles::{
     CultProfile, PsychologicalEvent, PsychologicalState, create_cult_ai, create_cult_coordination,
     create_cult_profile,
 };
 pub use decision::*;
-pub use states::{AIState, AIStateMachine, StateTransitionTrigger};
+pub use game_behaviors::{AttackBehavior, DefendBehavior, GatheringBehavior, RetreatBehavior};
+pub use states::StateTransitionTrigger;
 pub use systems::ai_execution::{AICommandEvent, AIGlobalState, AIPerceptionEvent};
-pub use systems::behavior_tree::BehaviorTree as OldBehaviorTree;
 pub use systems::decision_making::AIDecisionMaker;
-pub use systems::state_machine::{
-    AIStateMachine as OldStateMachine, AttackBehavior, DefendBehavior, GatheringBehavior,
-    RetreatBehavior,
-};
-pub use systems::utility_ai::*;
-pub use targeting::*;
 pub use types::{AICoordination, AIMessage, AIRole};
 
 // SystemSets for organizing AI system execution order
@@ -56,7 +53,9 @@ pub struct GameAIPlugin;
 impl Plugin for GameAIPlugin {
     fn build(&self, app: &mut App) {
         app
-            // Add AI events
+            // Add the generic AI toolkit plugin
+            .add_plugins(bevy_ai_toolkit::BevyAIToolkitPlugin)
+            // Add game-specific AI events
             .add_message::<AIMessage>()
             .add_message::<PsychologicalEvent>()
             .add_message::<crate::systems::AICommandEvent>()
@@ -75,15 +74,11 @@ impl Plugin for GameAIPlugin {
                     .chain()
                     .run_if(any_ai_entities_exist),
             )
-            // Core AI systems - update basic AI state
+            // Core AI systems - update game-specific AI state
             .add_systems(
                 Update,
                 (
-                    // From systems module
-                    crate::systems::state_machine::state_machine_update_system,
-                    crate::systems::behavior_tree::behavior_tree_system,
-                    crate::systems::utility_ai::utility_ai_system,
-                    // From new modules
+                    // Game-specific state systems
                     crate::states::state_execution_system,
                     crate::states::state_transition_system,
                     crate::behaviors::behavior_tree_execution_system,
@@ -134,13 +129,17 @@ impl Plugin for GameAIPlugin {
 }
 
 // Condition to check if any AI entities exist
+// Note: We check for both toolkit types (from bevy_ai_toolkit::prelude) and
+// game-specific types (from states/behaviors modules) since they are distinct Component types
 #[allow(clippy::type_complexity)]
 fn any_ai_entities_exist(
     ai_query: Query<
         (),
         Or<(
-            With<OldStateMachine>,
-            With<OldBehaviorTree>,
+            With<AIStateMachine>,                 // Toolkit state machine
+            With<crate::states::AIStateMachine>,  // Game-specific state machine
+            With<BehaviorTree>,                   // Toolkit behavior tree
+            With<crate::behaviors::BehaviorTree>, // Game-specific behavior tree
             With<UtilityAI>,
             With<AIDecisionMaker>,
             With<AICoordination>,
@@ -202,38 +201,10 @@ pub struct CoordinatedBehavior {
 // AI action execution system that translates AI behaviors into physics commands
 fn ai_action_execution_system(
     mut movement_events: MessageWriter<MovementCommandEvent>,
-    gathering_query: Query<
-        (
-            Entity,
-            &crate::systems::state_machine::GatheringBehavior,
-            &Transform,
-        ),
-        Added<crate::systems::state_machine::GatheringBehavior>,
-    >,
-    attack_query: Query<
-        (
-            Entity,
-            &crate::systems::state_machine::AttackBehavior,
-            &Transform,
-        ),
-        Added<crate::systems::state_machine::AttackBehavior>,
-    >,
-    defend_query: Query<
-        (
-            Entity,
-            &crate::systems::state_machine::DefendBehavior,
-            &Transform,
-        ),
-        Added<crate::systems::state_machine::DefendBehavior>,
-    >,
-    retreat_query: Query<
-        (
-            Entity,
-            &crate::systems::state_machine::RetreatBehavior,
-            &Transform,
-        ),
-        Added<crate::systems::state_machine::RetreatBehavior>,
-    >,
+    gathering_query: Query<(Entity, &GatheringBehavior, &Transform), Added<GatheringBehavior>>,
+    attack_query: Query<(Entity, &AttackBehavior, &Transform), Added<AttackBehavior>>,
+    defend_query: Query<(Entity, &DefendBehavior, &Transform), Added<DefendBehavior>>,
+    retreat_query: Query<(Entity, &RetreatBehavior, &Transform), Added<RetreatBehavior>>,
     mut commands: Commands,
 ) {
     // Handle gathering behavior - move to resource location
@@ -326,7 +297,7 @@ impl GameAIPlugin {
             .spawn((
                 Transform::from_translation(position),
                 GlobalTransform::default(),
-                crate::states::AIStateMachine::default(),
+                crate::states::AIStateMachine::default(), // Use game-specific state machine
                 AICoordination {
                     team_id: 1,
                     role: ai_type.clone(),
@@ -347,7 +318,7 @@ impl GameAIPlugin {
     pub fn spawn_behavior_tree_ai(
         commands: &mut Commands,
         position: Vec3,
-        tree: crate::behaviors::BehaviorTree,
+        tree: crate::behaviors::BehaviorTree, // Use game-specific behavior tree
     ) -> Entity {
         commands
             .spawn((
@@ -374,7 +345,7 @@ impl GameAIPlugin {
     pub fn spawn_utility_ai(
         commands: &mut Commands,
         position: Vec3,
-        utility_ai: UtilityAI,
+        utility_ai: UtilityAI, // Now from toolkit
     ) -> Entity {
         commands
             .spawn((

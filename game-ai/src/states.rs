@@ -338,7 +338,7 @@ fn execute_attack_state(
         // Move towards target and attack
         commands
             .entity(entity)
-            .insert(crate::systems::state_machine::AttackBehavior {
+            .insert(crate::game_behaviors::AttackBehavior {
                 target: Some(target),
                 aggression_level: unit.map(|u| u.attack_damage / 10.0).unwrap_or(1.0),
             });
@@ -394,7 +394,7 @@ fn execute_gather_state(
     if let Some(resource) = state_machine.state_data.target_entity {
         commands
             .entity(entity)
-            .insert(crate::systems::state_machine::GatheringBehavior {
+            .insert(crate::game_behaviors::GatheringBehavior {
                 target_resource: Some(resource),
                 gathering_rate: 1.0,
             });

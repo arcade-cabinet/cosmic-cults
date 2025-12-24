@@ -3,13 +3,11 @@
 use crate::{
     GameAIPlugin,
     cult_profiles::{CultProfile, PsychologicalState, create_cult_profile, presets},
-    systems::{
-        AIState, AIStateMachine, AITransition, AttackBehavior, DefendBehavior, GatheringBehavior,
-        RetreatBehavior,
-    },
+    game_behaviors::{AttackBehavior, DefendBehavior, GatheringBehavior, RetreatBehavior},
     types::{AICoordination, AIRole},
 };
 use bevy::prelude::*;
+use bevy_ai_toolkit::prelude::{AIState, AIStateMachine, AITransition};
 use game_physics::prelude::*;
 
 /// Integration test to verify AI behaviors trigger physics movement commands

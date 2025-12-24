@@ -404,7 +404,7 @@ pub fn goal_execution_system(
                 StrategicGoal::EliminateEnemy(target) => {
                     commands
                         .entity(entity)
-                        .insert(crate::systems::state_machine::AttackBehavior {
+                        .insert(crate::game_behaviors::AttackBehavior {
                             target: Some(*target),
                             aggression_level: decision_maker.personality.aggression,
                         });
@@ -413,19 +413,19 @@ pub fn goal_execution_system(
                 StrategicGoal::DefendPosition(position) => {
                     commands
                         .entity(entity)
-                        .insert(crate::systems::state_machine::DefendBehavior {
+                        .insert(crate::game_behaviors::DefendBehavior {
                             defend_position: *position,
                             patrol_radius: 10.0,
                         });
                 }
 
                 StrategicGoal::GatherResources => {
-                    commands.entity(entity).insert(
-                        crate::systems::state_machine::GatheringBehavior {
+                    commands
+                        .entity(entity)
+                        .insert(crate::game_behaviors::GatheringBehavior {
                             target_resource: None,
                             gathering_rate: 1.0,
-                        },
-                    );
+                        });
                 }
 
                 StrategicGoal::ExploreTerrain(target) => {

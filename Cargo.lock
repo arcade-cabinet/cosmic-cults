@@ -268,6 +268,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-ai-toolkit"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "glam 0.30.9",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1961,6 +1971,7 @@ version = "0.1.0"
 dependencies = [
  "ahash",
  "bevy",
+ "bevy-ai-toolkit",
  "game-physics",
  "game-units",
  "glam 0.30.9",
