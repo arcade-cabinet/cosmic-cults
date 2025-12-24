@@ -1,8 +1,8 @@
-.. PACKAGE_NAME documentation master file
+.. rust-cosmic-cults documentation master file
    Synced from jbcom-control-center - customize for your project
 
 =======================================
-PACKAGE_NAME Documentation
+Rust Cosmic Cults Documentation
 =======================================
 
 .. TODO: Add your project description here
