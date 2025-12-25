@@ -1,4 +1,4 @@
-use game_physics::Velocity;
+use crate::physics_engine::Velocity;
 // Targeting system using Rapier3D for physics-based line of sight and range checks
 use bevy::prelude::*;
 // use bevy_rapier3d::prelude::*;

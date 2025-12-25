@@ -6,7 +6,7 @@ use crate::units::{
 use bevy::pbr::StandardMaterial;
 use bevy::prelude::*;
 use bevy::render::alpha::AlphaMode;
-use game_physics::{
+use crate::physics_engine::{
     AABB, CollisionMask, Friction, Mass, MovementController, MovementPath, MovementTarget,
     RigidBodyType, RigidBodyVariant, SpatialData, Velocity,
 };
@@ -175,7 +175,7 @@ pub fn spawn_unit(
                 path_index: 0,
                 waypoints: Vec::new(),
                 is_moving: false,
-                movement_type: game_physics::MovementType::Ground,
+                movement_type: crate::physics_engine::MovementType::Ground,
             },
             Velocity::default(),
             AABB::from_size(Vec3::new(1.0, 2.0, 1.0)), // Unit collision box

@@ -1,7 +1,7 @@
 // AI Execution Systems - handles AI movement, combat, perception and coordination
 use crate::units::{Leader, Team, Unit};
 use bevy::prelude::*;
-use game_physics::prelude::*;
+use crate::physics_engine::prelude::*;
 
 // Events for AI communication
 #[derive(Event, Clone, Debug)]

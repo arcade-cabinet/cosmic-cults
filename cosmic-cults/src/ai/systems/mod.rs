@@ -8,4 +8,4 @@ pub use ai_execution::*;
 pub use decision_making::*;
 
 // Re-export toolkit systems for backward compatibility
-pub use bevy_ai_toolkit::prelude::*;
+pub use crate::ai_toolkit::prelude::*;

@@ -1,7 +1,7 @@
 // Cult-specific AI profiles and behaviors
 use crate::ai::types::{AICoordination, AIRole};
 use bevy::prelude::*;
-use bevy_ai_toolkit::prelude::*; // Use toolkit types
+use crate::ai_toolkit::prelude::*; // Use toolkit types
 use std::collections::HashMap;
 
 /// Cult-specific AI behavioral modifiers

@@ -1,6 +1,6 @@
 #![allow(unused)]
 use bevy::prelude::*;
-use game_physics::{
+use crate::physics_engine::{
     AABB, GamePhysicsPlugin, Mass, MovementCommand, MovementCommandEvent, MovementController,
     SpatialData, Velocity,
 };
@@ -30,7 +30,7 @@ pub use leadership::LeadershipBuilding;
 pub use spawning::{GameAssets, UnitTemplate, UnitTemplates, init_game_assets};
 
 // Re-export physics types units need
-pub use game_physics::{MovementPath, MovementTarget};
+pub use crate::physics_engine::{MovementPath, MovementTarget};
 
 // Main plugin for the game-units crate
 #[derive(Default)]

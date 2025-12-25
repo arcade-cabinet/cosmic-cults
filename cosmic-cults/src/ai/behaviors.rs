@@ -1,7 +1,7 @@
 // Behavior Tree Implementation - Production-ready behavior tree for complex AI logic
 use crate::units::{Team, Unit};
 use bevy::prelude::*;
-use game_physics::prelude::*;
+use crate::physics_engine::prelude::*;
 use std::collections::HashMap;
 
 // Core behavior tree node types

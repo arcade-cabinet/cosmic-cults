@@ -343,7 +343,7 @@ pub fn create_sphere_collider(
 
 /// Commonly used imports
 pub mod prelude {
-    pub use crate::{
+    pub use super::{
         AABB,
         Acceleration,
         BroadPhaseCollisionPairs,

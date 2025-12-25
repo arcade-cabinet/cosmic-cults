@@ -1,7 +1,7 @@
 use crate::units::{Team, Unit};
 use crate::world::{GameMap, PathfindingGrid, find_path, grid_to_world, world_to_grid};
 use bevy::prelude::*;
-use game_physics::{
+use crate::physics_engine::{
     AABB, MovementCommand, MovementCommandEvent, MovementController, Obstacle, Velocity,
 };
 

@@ -3,11 +3,11 @@
 
 use crate::units::{Leader, Team, Unit};
 use bevy::prelude::*;
-use game_physics::prelude::*;
+use crate::physics_engine::prelude::*;
 use std::collections::HashMap;
 
 // Re-export the generic AI toolkit for convenience
-pub use bevy_ai_toolkit::prelude::*;
+pub use crate::ai_toolkit::prelude::*;
 
 // Game-specific modules
 pub mod behaviors;
@@ -54,7 +54,7 @@ impl Plugin for GameAIPlugin {
     fn build(&self, app: &mut App) {
         app
             // Add the generic AI toolkit plugin
-            .add_plugins(bevy_ai_toolkit::BevyAIToolkitPlugin)
+            .add_plugins(crate::ai_toolkit::BevyAIToolkitPlugin)
             // Add game-specific AI events
             .add_message::<AIMessage>()
             .add_message::<PsychologicalEvent>()
@@ -129,7 +129,7 @@ impl Plugin for GameAIPlugin {
 }
 
 // Condition to check if any AI entities exist
-// Note: We check for both toolkit types (from bevy_ai_toolkit::prelude) and
+// Note: We check for both toolkit types (from crate::ai_toolkit::prelude) and
 // game-specific types (from states/behaviors modules) since they are distinct Component types
 #[allow(clippy::type_complexity)]
 fn any_ai_entities_exist(

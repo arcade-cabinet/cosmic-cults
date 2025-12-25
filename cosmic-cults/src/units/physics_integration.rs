@@ -1,6 +1,6 @@
 use crate::units::{Team, Unit};
 use bevy::prelude::*;
-use game_physics::{
+use crate::physics_engine::{
     AABB, CollisionEvent, CollisionType, Mass, MovementCommand, MovementCommandEvent,
     MovementController, RaycastEvent, RaycastHit, RaycastResultEvent, SpatialData, TriggerEvent,
     Velocity,
@@ -83,7 +83,7 @@ pub fn obstacle_collision_handler(
 pub fn find_nearby_units(
     position: Vec3,
     radius: f32,
-    spatial_grid: &game_physics::GlobalSpatialGrid,
+    spatial_grid: &crate::physics_engine::GlobalSpatialGrid,
 ) -> Vec<Entity> {
     spatial_grid.grid.query_range(position, radius)
 }

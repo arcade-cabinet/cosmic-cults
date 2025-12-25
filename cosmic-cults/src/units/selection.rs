@@ -1,6 +1,6 @@
 use crate::units::{Selectable, Selected, Unit};
 use bevy::prelude::*;
-use game_physics::{
+use crate::physics_engine::{
     MovementCommand, MovementCommandEvent, MovementController, MovementPath, MovementTarget,
     Velocity,
 };

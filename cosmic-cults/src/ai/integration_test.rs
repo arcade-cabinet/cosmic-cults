@@ -7,8 +7,8 @@ use crate::ai::{
     types::{AICoordination, AIRole},
 };
 use bevy::prelude::*;
-use bevy_ai_toolkit::prelude::{AIState, AIStateMachine, AITransition};
-use game_physics::prelude::*;
+use crate::ai_toolkit::prelude::{AIState, AIStateMachine, AITransition};
+use crate::physics_engine::prelude::*;
 
 /// Integration test to verify AI behaviors trigger physics movement commands
 #[test]

@@ -134,7 +134,7 @@ impl Default for Selectable {
 }
 
 // Movement target re-exported from game-physics
-// See game_physics::components::MovementTarget
+// See crate::physics_engine::components::MovementTarget
 
 // Base stats component for buff calculations
 #[derive(Component, Clone, Debug)]
@@ -257,7 +257,7 @@ impl Default for AuraBuff {
 }
 
 // Movement path re-exported from game-physics
-// See game_physics::components::MovementPath
+// See crate::physics_engine::components::MovementPath
 
 // Unit formation data
 #[derive(Component, Clone, Debug)]
