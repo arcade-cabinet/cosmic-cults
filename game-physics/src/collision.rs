@@ -238,7 +238,7 @@ pub fn raycast_system(
 // COLLISION EVENTS AND TYPES
 // ==============================================================================
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct CollisionEvent {
     pub entity_a: Entity,
     pub entity_b: Entity,
@@ -247,14 +247,14 @@ pub struct CollisionEvent {
     pub normal: Vec3,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct TriggerEvent {
     pub sensor_entity: Entity,
     pub triggered_by: Entity,
     pub entered: bool, // true for enter, false for exit
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct RaycastEvent {
     pub ray_id: u32,
     pub origin: Vec3,
@@ -262,7 +262,7 @@ pub struct RaycastEvent {
     pub max_distance: f32,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct RaycastResultEvent {
     pub ray_id: u32,
     pub hit: Option<RaycastHit>,
@@ -356,7 +356,3 @@ fn calculate_aabb_normal(hit_point: Vec3, aabb_center: Vec3, _aabb: &AABB) -> Ve
         Vec3::new(0.0, 0.0, local_point.z.signum())
     }
 }
-impl bevy::prelude::Message for CollisionEvent {}
-impl bevy::prelude::Message for TriggerEvent {}
-impl bevy::prelude::Message for RaycastEvent {}
-impl bevy::prelude::Message for RaycastResultEvent {}

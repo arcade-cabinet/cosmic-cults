@@ -121,7 +121,7 @@ impl Plugin for GamePhysicsPlugin {
 // MOVEMENT EVENTS
 // ==============================================================================
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct MovementCommandEvent {
     pub entity: Entity,
     pub command: MovementCommand,
@@ -165,7 +165,7 @@ pub fn spatial_indexing_update_system(
     mut query: Query<(Entity, &Transform, &mut SpatialData), Changed<Transform>>,
     time: Res<Time>,
 ) {
-    let _current_time = time.elapsed_seconds();
+    let _current_time = time.elapsed_secs();
 
     for (entity, transform, mut spatial_data) in query.iter_mut() {
         // Update spatial data
@@ -381,4 +381,3 @@ pub mod prelude {
         spatial_indexing_update_system,
     };
 }
-impl bevy::prelude::Message for MovementCommandEvent {}

@@ -6,12 +6,9 @@ pub struct XPPlugin;
 
 impl Plugin for XPPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<XPGainEvent>()
-            .add_event::<LevelUpEvent>()
-            .add_systems(
-                Update,
-                (process_xp_events, check_level_ups).chain(),
-            );
+        app.add_message::<XPGainEvent>()
+            .add_message::<LevelUpEvent>()
+            .add_systems(Update, (process_xp_events, check_level_ups).chain());
     }
 }
 
@@ -51,7 +48,7 @@ impl Experience {
     }
 }
 
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct XPGainEvent {
     pub entity: Entity,
     pub amount: u32,
@@ -67,16 +64,16 @@ pub enum XPSource {
     Quest,
 }
 
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct LevelUpEvent {
     pub entity: Entity,
     pub new_level: u32,
 }
 
 pub fn process_xp_events(
-    mut xp_events: EventReader<XPGainEvent>,
+    mut xp_events: MessageReader<XPGainEvent>,
     mut query: Query<&mut Experience>,
-    mut level_up_events: EventWriter<LevelUpEvent>,
+    mut level_up_events: MessageWriter<LevelUpEvent>,
 ) {
     for event in xp_events.read() {
         if let Ok(mut experience) = query.get_mut(event.entity) {
@@ -93,8 +90,11 @@ pub fn process_xp_events(
     }
 }
 
-pub fn check_level_ups(mut level_up_events: EventReader<LevelUpEvent>) {
+pub fn check_level_ups(mut level_up_events: MessageReader<LevelUpEvent>) {
     for event in level_up_events.read() {
-        info!("Entity {:?} leveled up to level {}!", event.entity, event.new_level);
+        info!(
+            "Entity {:?} leveled up to level {}!",
+            event.entity, event.new_level
+        );
     }
 }

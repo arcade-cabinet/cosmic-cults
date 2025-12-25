@@ -1,5 +1,6 @@
-use crate::{AuraBuff, AuraType, BaseStats, Health, Leader, Unit};
+use crate::{AuraBuff, AuraType, BaseStats, Leader, Unit};
 use bevy::prelude::*;
+use bevy_combat::prelude::Health;
 #[cfg(feature = "web")]
 use web_sys::console;
 
@@ -46,7 +47,7 @@ pub fn leader_abilities_system(
     mut leader_query: Query<(&mut Leader, &Transform)>,
     unit_query: Query<(Entity, &Transform, &Unit), Without<Leader>>,
 ) {
-    let current_time = time.elapsed_seconds();
+    let current_time = time.elapsed_secs();
 
     for (mut leader, leader_transform) in leader_query.iter_mut() {
         if !leader.alive {
@@ -168,17 +169,16 @@ fn use_ability2(
 
 // Buff application system - actually applies stat modifications
 pub fn buff_application_system(
-    mut unit_query: Query<&mut Unit>,
+    mut unit_query: Query<(&mut Unit, &mut Health)>,
     aura_buff_query: Query<&AuraBuff>,
     base_stats_query: Query<&BaseStats>,
 ) {
     for aura_buff in aura_buff_query.iter() {
-        if let Ok(mut unit) = unit_query.get_mut(aura_buff.target_unit)
+        if let Ok((mut unit, mut health)) = unit_query.get_mut(aura_buff.target_unit)
             && let Ok(base_stats) = base_stats_query.get(aura_buff.target_unit)
         {
             // Apply multiplicative bonuses using base stats
-            // TODO: Add attack damage field to Unit or use separate attack component
-            unit.max_health = base_stats.base_health * aura_buff.hp_mul;
+            health.maximum = base_stats.base_health * aura_buff.hp_mul;
             unit.movement_speed = base_stats.base_speed * aura_buff.speed_mul;
             unit.attack_damage = base_stats.base_attack_damage * aura_buff.atk_mul;
             // TODO: Add XP multiplier application
@@ -192,7 +192,7 @@ pub fn aura_cleanup_system(
     time: Res<Time>,
     aura_query: Query<(Entity, &AuraBuff)>,
 ) {
-    let current_time = time.elapsed_seconds();
+    let current_time = time.elapsed_secs();
 
     for (entity, aura_buff) in aura_query.iter() {
         if current_time >= aura_buff.expires_at {
@@ -211,7 +211,7 @@ pub fn passive_aura_system(
     leader_query: Query<(&Transform, &Leader)>,
     unit_query: Query<(Entity, &Transform, &Unit), Without<Leader>>,
 ) {
-    let current_time = time.elapsed_seconds();
+    let current_time = time.elapsed_secs();
 
     for (leader_transform, leader) in leader_query.iter() {
         if !leader.alive {

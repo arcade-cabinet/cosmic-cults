@@ -15,7 +15,7 @@ readme = "README.md"
 
 [dependencies]
 # Core Bevy engine
-bevy = { workspace = true, features = ["bevy_state"] }
+bevy = { workspace = true, features = ["bevy_state", "bevy_color", "bevy_gizmos"] }
 
 # Math and utilities
 glam.workspace = true

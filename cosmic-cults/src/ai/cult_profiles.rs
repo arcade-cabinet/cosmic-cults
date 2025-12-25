@@ -270,10 +270,11 @@ pub fn update_psychological_state_system(
     mut query: Query<(&mut PsychologicalState, &CultProfile)>,
     time: Res<Time>,
 ) {
-    let delta = time.delta_seconds();
+    let delta = time.delta_secs();
 
     for (mut psychological_state, cult_profile) in query.iter_mut() {
-        psychological_state.thirst_level = (psychological_state.thirst_level - delta * 0.1).max(0.0);
+        psychological_state.thirst_level =
+            (psychological_state.thirst_level - delta * 0.1).max(0.0);
         psychological_state.fear_level = (psychological_state.fear_level - delta * 0.2).max(0.0);
 
         if cult_profile.cult_name == "Crimson Covenant" {
@@ -289,7 +290,7 @@ pub fn update_psychological_state_system(
     }
 }
 
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct PsychologicalEvent {
     pub entity: Entity,
     pub event_type: PsychologicalEventType,
@@ -307,7 +308,7 @@ pub enum PsychologicalEventType {
 }
 
 pub fn handle_psychological_events(
-    mut events: EventReader<PsychologicalEvent>,
+    mut events: MessageReader<PsychologicalEvent>,
     mut query: Query<&mut PsychologicalState>,
 ) {
     for event in events.read() {

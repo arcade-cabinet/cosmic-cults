@@ -68,7 +68,7 @@ impl Plugin for CombatVisualsPlugin {
 
 pub fn spawn_damage_numbers(
     mut commands: Commands,
-    mut damage_events: EventReader<DamageEvent>,
+    mut damage_events: MessageReader<DamageEvent>,
     transform_query: Query<&Transform>,
 ) {
     for event in damage_events.read() {
@@ -167,10 +167,7 @@ pub fn update_hit_flash(
     }
 }
 
-pub fn handle_death_effects(
-    mut death_events: EventReader<DeathEvent>,
-    mut commands: Commands,
-) {
+pub fn handle_death_effects(mut death_events: MessageReader<DeathEvent>, mut commands: Commands) {
     for event in death_events.read() {
         commands.entity(event.entity).insert(VisualDeathEffect {
             fade_time: 1.0,
@@ -183,7 +180,11 @@ pub fn handle_death_effects(
 pub fn update_death_effects(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut VisualDeathEffect, &MeshMaterial3d<StandardMaterial>)>,
+    mut query: Query<(
+        Entity,
+        &mut VisualDeathEffect,
+        &MeshMaterial3d<StandardMaterial>,
+    )>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (entity, mut death_effect, mat_handle) in query.iter_mut() {
@@ -241,8 +242,12 @@ fn color_to_emissive(color: Color) -> LinearRgba {
 mod rand {
     use std::sync::atomic::{AtomicU32, Ordering};
     static SEED: AtomicU32 = AtomicU32::new(0x12345678);
-    pub fn random<T: Random>() -> T { T::random() }
-    pub trait Random { fn random() -> Self; }
+    pub fn random<T: Random>() -> T {
+        T::random()
+    }
+    pub trait Random {
+        fn random() -> Self;
+    }
     impl Random for f32 {
         fn random() -> Self {
             let mut seed = SEED.load(Ordering::Relaxed);

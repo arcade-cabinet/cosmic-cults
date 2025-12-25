@@ -275,6 +275,18 @@ dependencies = [
  "glam 0.30.9",
  "serde",
  "smallvec",
+ "tracing",
+]
+
+[[package]]
+name = "bevy-combat"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "glam 0.30.9",
+ "serde",
+ "smallvec",
+ "tracing",
 ]
 
 [[package]]
@@ -1338,15 +1350,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bincode"
-version = "1.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1617,6 +1620,23 @@ dependencies = [
  "bitflags",
  "core-foundation",
  "libc",
+]
+
+[[package]]
+name = "cosmic-cults"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-ai-toolkit",
+ "bevy-combat",
+ "game-assets",
+ "game-physics",
+ "game-units",
+ "game-world",
+ "glam 0.30.9",
+ "rand",
+ "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -1966,44 +1986,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "game-ai"
-version = "0.1.0"
-dependencies = [
- "ahash",
- "bevy",
- "bevy-ai-toolkit",
- "game-physics",
- "game-units",
- "glam 0.30.9",
- "rand",
- "serde",
- "smallvec",
- "web-sys",
-]
-
-[[package]]
 name = "game-assets"
 version = "0.1.0"
 dependencies = [
  "bevy",
  "serde",
-]
-
-[[package]]
-name = "game-combat"
-version = "0.1.0"
-dependencies = [
- "ahash",
- "avian3d",
- "bevy",
- "bincode",
- "game-physics",
- "glam 0.30.9",
- "rand",
- "serde",
  "tracing",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -2016,22 +2004,9 @@ dependencies = [
  "glam 0.30.9",
  "serde",
  "smallvec",
+ "tracing",
  "wasm-bindgen",
  "web-sys",
-]
-
-[[package]]
-name = "game-runner"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "game-ai",
- "game-assets",
- "game-combat",
- "game-physics",
- "game-units",
- "game-world",
- "rand",
 ]
 
 [[package]]
@@ -2040,12 +2015,14 @@ version = "0.1.0"
 dependencies = [
  "ahash",
  "bevy",
+ "bevy-combat",
  "game-physics",
  "game-world",
  "glam 0.30.9",
  "rand",
  "serde",
  "smallvec",
+ "tracing",
  "web-sys",
 ]
 

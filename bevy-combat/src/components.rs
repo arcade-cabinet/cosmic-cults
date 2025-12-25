@@ -116,7 +116,7 @@ pub enum StatusEffectType {
     Poison(f32),
     Burn(f32),
     Freeze,
-    
+
     // Custom
     Custom(String),
 }
@@ -179,7 +179,11 @@ pub struct AttackCooldown {
 impl AttackCooldown {
     pub fn new(base_attack_speed: f32) -> Self {
         Self {
-            time_until_next: if base_attack_speed > 0.0 { 1.0 / base_attack_speed } else { 0.0 },
+            time_until_next: if base_attack_speed > 0.0 {
+                1.0 / base_attack_speed
+            } else {
+                0.0
+            },
             attack_speed_modifier: 1.0,
         }
     }

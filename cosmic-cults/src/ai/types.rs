@@ -19,7 +19,7 @@ pub struct AICoordination {
     pub can_receive_orders: bool,
 }
 
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct AIMessage {
     pub sender: Entity,
     pub receiver: Option<Entity>,

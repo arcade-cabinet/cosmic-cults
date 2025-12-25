@@ -242,19 +242,15 @@ impl BehaviorNode {
                 NodeStatus::Success
             }
 
-            BehaviorNode::UntilFail(child) => {
-                match child.tick(blackboard, _entity, _world) {
-                    NodeStatus::Failure => NodeStatus::Success,
-                    _ => NodeStatus::Running,
-                }
-            }
+            BehaviorNode::UntilFail(child) => match child.tick(blackboard, _entity, _world) {
+                NodeStatus::Failure => NodeStatus::Success,
+                _ => NodeStatus::Running,
+            },
 
-            BehaviorNode::UntilSuccess(child) => {
-                match child.tick(blackboard, _entity, _world) {
-                    NodeStatus::Success => NodeStatus::Success,
-                    _ => NodeStatus::Running,
-                }
-            }
+            BehaviorNode::UntilSuccess(child) => match child.tick(blackboard, _entity, _world) {
+                NodeStatus::Success => NodeStatus::Success,
+                _ => NodeStatus::Running,
+            },
 
             BehaviorNode::Succeeder(child) => {
                 child.tick(blackboard, _entity, _world);
@@ -386,7 +382,7 @@ pub fn behavior_tree_system(
     world: &World,
     mut query: Query<(Entity, &mut BehaviorTree)>,
 ) {
-    let current_time = time.elapsed_seconds();
+    let current_time = time.elapsed_secs();
 
     // Collect entities that need ticking
     let mut trees_to_tick = Vec::new();

@@ -7,11 +7,7 @@ impl Plugin for EffectsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (
-                damage_number_system,
-                health_bar_system,
-                death_effect_system,
-            ),
+            (damage_number_system, health_bar_system, death_effect_system),
         );
     }
 }
@@ -78,8 +74,7 @@ pub fn health_bar_system(
         let percentage = health.percentage();
 
         gizmos.rect(
-            position,
-            Quat::IDENTITY,
+            Isometry3d::new(position, Quat::IDENTITY),
             Vec2::new(health_bar.width, health_bar.height),
             Color::srgb(0.2, 0.2, 0.2),
         );
@@ -94,10 +89,9 @@ pub fn health_bar_system(
 
         let health_width = health_bar.width * percentage;
         let health_position = position - Vec3::X * (health_bar.width - health_width) / 2.0;
-        
+
         gizmos.rect(
-            health_position,
-            Quat::IDENTITY,
+            Isometry3d::new(health_position, Quat::IDENTITY),
             Vec2::new(health_width, health_bar.height),
             health_color,
         );

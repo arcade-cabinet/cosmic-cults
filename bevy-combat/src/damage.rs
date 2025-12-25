@@ -5,8 +5,8 @@ pub struct DamagePlugin;
 
 impl Plugin for DamagePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<DamageEvent>()
-            .add_event::<DeathEvent>()
+        app.add_message::<DamageEvent>()
+            .add_message::<DeathEvent>()
             .add_systems(
                 Update,
                 (
@@ -19,7 +19,7 @@ impl Plugin for DamagePlugin {
     }
 }
 
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct DamageEvent {
     pub attacker: Entity,
     pub target: Entity,
@@ -28,19 +28,19 @@ pub struct DamageEvent {
     pub is_critical: bool,
 }
 
-#[derive(Event, Clone, Debug)]
+#[derive(Message, Clone, Debug)]
 pub struct DeathEvent {
     pub entity: Entity,
     pub killer: Option<Entity>,
 }
 
 pub fn process_damage_events(
-    mut damage_events: EventReader<DamageEvent>,
+    mut damage_events: MessageReader<DamageEvent>,
     mut health_query: Query<&mut Health>,
     combat_stats_query: Query<&CombatStats>,
     mut shield_query: Query<&mut Shield>,
     invulnerable_query: Query<&Invulnerable>,
-    mut death_events: EventWriter<DeathEvent>,
+    mut death_events: MessageWriter<DeathEvent>,
 ) {
     for event in damage_events.read() {
         if invulnerable_query.contains(event.target) {
@@ -121,7 +121,7 @@ pub fn apply_damage_modifiers(mut query: Query<(&mut Health, &StatusEffect)>, ti
 pub fn check_for_deaths(
     mut commands: Commands,
     query: Query<(Entity, &Health), Without<Dead>>,
-    mut death_events: EventWriter<DeathEvent>,
+    mut death_events: MessageWriter<DeathEvent>,
 ) {
     for (entity, health) in query.iter() {
         if health.current <= 0.0 {

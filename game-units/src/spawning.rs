@@ -6,7 +6,7 @@ use crate::{
 use bevy::pbr::StandardMaterial;
 use bevy::prelude::*;
 use bevy::render::alpha::AlphaMode;
-use bevy_combat::prelude::{Health, CombatStats};
+use bevy_combat::prelude::{CombatStats, Health};
 use game_physics::{
     AABB, CollisionMask, Friction, Mass, MovementController, MovementPath, MovementTarget,
     RigidBodyType, RigidBodyVariant, SpatialData, Velocity,
@@ -299,85 +299,89 @@ pub fn spawn_leader(
     let aura_color = get_aura_color(&aura_type);
     let aura_emissive = get_aura_emissive(&aura_type);
 
-    let entity = commands
-        .spawn((
-            // === VISUAL COMPONENTS ===
-            SceneRoot(leader_model),
-            Transform::from_translation(position).with_scale(Vec3::splat(1.2)), // Leaders are bigger
-            GlobalTransform::default(),
-            Visibility::default(),
-            ViewVisibility::default(),
-            InheritedVisibility::default(),
-            // === GAME COMPONENTS ===
-            Leader {
-                name: name.to_string(),
-                cult: cult.to_string(),
-                shield: 50.0,
-                aura_radius: 15.0,
-                aura_type: aura_type.clone(),
-                platform_entity: None,
-                defeat_on_death: true,
-                alive: true,
-                last_ability1_use: 0.0,
-                last_ability2_use: 0.0,
+    let mut entity = commands.spawn((
+        // === VISUAL COMPONENTS ===
+        SceneRoot(leader_model),
+        Transform::from_translation(position).with_scale(Vec3::splat(1.2)), // Leaders are bigger
+        GlobalTransform::default(),
+        Visibility::default(),
+        ViewVisibility::default(),
+        InheritedVisibility::default(),
+        // === GAME COMPONENTS ===
+        Leader {
+            name: name.to_string(),
+            cult: cult.to_string(),
+            shield: 50.0,
+            aura_radius: 15.0,
+            aura_type: aura_type.clone(),
+            platform_entity: None,
+            defeat_on_death: true,
+            alive: true,
+            last_ability1_use: 0.0,
+            last_ability2_use: 0.0,
+        },
+        Unit {
+            unit_type: "leader".to_string(),
+            cult: cult.to_string(),
+            experience: 0,
+            veteran_tier: 3,
+            attack_damage: 25.0,
+            movement_speed: 6.0,
+            attack_speed: 1.5,
+        },
+        Health::new(200.0),
+        CombatStats {
+            damage: 25.0,
+            attack_speed: 1.5,
+            ..default()
+        },
+    ));
+
+    entity.insert((
+        Team {
+            id: team_id,
+            cult: cult.to_string(),
+            color: cult_color,
+        },
+        Selectable {
+            selection_priority: 10,
+            selection_radius: 2.0,
+        },
+        MovementTarget::new(position.x, position.y, position.z, 6.0),
+        MovementPath {
+            waypoints: Vec::new(),
+            current_waypoint_index: 0,
+            movement_speed: 6.0,
+            is_moving: false,
+        },
+        BaseStats {
+            base_attack_damage: 25.0,
+            base_health: 200.0,
+            base_speed: 6.0,
+            base_attack_speed: 1.5,
+            initialized: true,
+        },
+        Experience {
+            current: 0,
+            total_earned: 1000,
+            level: 5,
+            kills: 0,
+            buildings_destroyed: 0,
+        },
+        VeteranStatus {
+            tier: VeteranTier::Veteran,
+            promotion_ready: false,
+            visual_scale: 1.2,
+            bonuses: VeteranBonus {
+                health_multiplier: 1.5,
+                damage_multiplier: 1.3,
+                speed_multiplier: 1.2,
+                xp_multiplier: 1.0,
             },
-            Unit {
-                unit_type: "leader".to_string(),
-                cult: cult.to_string(),
-                experience: 0,
-                veteran_tier: 3,
-                attack_damage: 25.0,
-                movement_speed: 6.0,
-                attack_speed: 1.5,
-            },
-            Health::new(200.0),
-            CombatStats {
-                damage: 25.0,
-                attack_speed: 1.5,
-                ..default()
-            },
-            Team {
-                id: team_id,
-                cult: cult.to_string(),
-                color: cult_color,
-            },
-            Selectable {
-                selection_priority: 10,
-                selection_radius: 2.0,
-            },
-            MovementTarget::new(position.x, position.z, position.z, 6.0),
-            MovementPath {
-                waypoints: Vec::new(),
-                current_waypoint_index: 0,
-                movement_speed: 6.0,
-                is_moving: false,
-            },
-            BaseStats {
-                base_attack_damage: 25.0,
-                base_health: 200.0,
-                base_speed: 6.0,
-                base_attack_speed: 1.5,
-                initialized: true,
-            },
-            Experience {
-                current: 0,
-                total_earned: 1000,
-                level: 5,
-                kills: 0,
-                buildings_destroyed: 0,
-            },
-            VeteranStatus {
-                tier: VeteranTier::Veteran,
-                promotion_ready: false,
-                visual_scale: 1.2,
-                bonuses: VeteranBonus {
-                    health_multiplier: 1.5,
-                    damage_multiplier: 1.3,
-                    speed_multiplier: 1.2,
-                    xp_multiplier: 1.0,
-                },
-            },
-        ))
+        },
+    ));
+
+    let entity_id = entity
         .with_children(|parent| {
             // === AURA VISUAL EFFECT ===
             parent.spawn((
@@ -488,7 +492,7 @@ pub fn spawn_leader(
         .into(),
     );
 
-    entity
+    entity.id()
 }
 
 // Squad spawning function - spawns multiple units in formation
@@ -725,62 +729,66 @@ pub fn spawn_unit_from_template(
     let cult_color = get_cult_color(cult);
     let model_handle = assets.get_unit_model(&template.model_name, cult);
 
-    let entity = commands
-        .spawn((
-            // === VISUAL COMPONENTS ===
-            SceneRoot(model_handle),
-            Transform::from_translation(position),
-            GlobalTransform::default(),
-            Visibility::default(),
-            ViewVisibility::default(),
-            InheritedVisibility::default(),
-            // === GAME COMPONENTS ===
-            Unit {
-                unit_type: template.unit_type.clone(),
-                cult: cult.to_string(),
-                experience: 0,
-                veteran_tier: 0,
-                attack_damage: template.base_attack,
-                movement_speed: template.base_speed,
-                attack_speed: template.attack_speed,
-            },
-            Health::new(template.base_health),
-            CombatStats {
-                damage: template.base_attack,
-                attack_speed: template.attack_speed,
-                ..default()
-            },
-            Team {
-                id: team_id,
-                cult: cult.to_string(),
-                color: cult_color,
-            },
-            Selectable {
-                selection_priority: 1,
-                selection_radius: 1.5,
-            },
-            MovementTarget::new(position.x, position.z, position.z, template.base_speed),
-            MovementPath {
-                waypoints: Vec::new(),
-                current_waypoint_index: 0,
-                movement_speed: template.base_speed,
-                is_moving: false,
-            },
-            BaseStats {
-                base_attack_damage: template.base_attack,
-                base_health: template.base_health,
-                base_speed: template.base_speed,
-                base_attack_speed: template.attack_speed,
-                initialized: true,
-            },
-            Experience::default(),
-            VeteranStatus {
-                tier: VeteranTier::Recruit,
-                promotion_ready: false,
-                visual_scale: 1.0,
-                bonuses: VeteranBonus::default(),
-            },
-        ))
+    let mut entity = commands.spawn((
+        // === VISUAL COMPONENTS ===
+        SceneRoot(model_handle),
+        Transform::from_translation(position),
+        GlobalTransform::default(),
+        Visibility::default(),
+        ViewVisibility::default(),
+        InheritedVisibility::default(),
+        // === GAME COMPONENTS ===
+        Unit {
+            unit_type: template.unit_type.clone(),
+            cult: cult.to_string(),
+            experience: 0,
+            veteran_tier: 0,
+            attack_damage: template.base_attack,
+            movement_speed: template.base_speed,
+            attack_speed: template.attack_speed,
+        },
+        Health::new(template.base_health),
+        CombatStats {
+            damage: template.base_attack,
+            attack_speed: template.attack_speed,
+            ..default()
+        },
+    ));
+
+    entity.insert((
+        Team {
+            id: team_id,
+            cult: cult.to_string(),
+            color: cult_color,
+        },
+        Selectable {
+            selection_priority: 1,
+            selection_radius: 1.5,
+        },
+        MovementTarget::new(position.x, position.y, position.z, template.base_speed),
+        MovementPath {
+            waypoints: Vec::new(),
+            current_waypoint_index: 0,
+            movement_speed: template.base_speed,
+            is_moving: false,
+        },
+        BaseStats {
+            base_attack_damage: template.base_attack,
+            base_health: template.base_health,
+            base_speed: template.base_speed,
+            base_attack_speed: template.attack_speed,
+            initialized: true,
+        },
+        Experience::default(),
+        VeteranStatus {
+            tier: VeteranTier::Recruit,
+            promotion_ready: false,
+            visual_scale: 1.0,
+            bonuses: VeteranBonus::default(),
+        },
+    ));
+
+    let entity_id = entity
         .with_children(|parent| {
             // Add visual children (health bar, selection indicator, etc.)
             // === SELECTION INDICATOR ===
@@ -841,5 +849,5 @@ pub fn spawn_unit_from_template(
         .into(),
     );
 
-    entity
+    entity.id()
 }

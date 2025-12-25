@@ -1,5 +1,5 @@
-pub mod xp;
 pub mod visuals;
+pub mod xp;
 
 use bevy::prelude::*;
 pub use bevy_combat::prelude::*;

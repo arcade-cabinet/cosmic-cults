@@ -1,6 +1,6 @@
 use crate::{Team, Unit};
 use bevy::prelude::*;
-use bevy_combat::prelude::{Health, DamageEvent, DamageType};
+use bevy_combat::prelude::{DamageEvent, DamageType, Health};
 use game_physics::{
     AABB, CollisionEvent, CollisionType, Mass, MovementCommand, MovementCommandEvent,
     MovementController, RaycastEvent, RaycastHit, RaycastResultEvent, SpatialData, TriggerEvent,
@@ -138,7 +138,7 @@ pub fn physics_steering_movement_system(
     time: Res<Time>,
     mut query: Query<(&mut Velocity, &Transform, &mut MovementController, &Mass), With<Unit>>,
 ) {
-    let dt = time.delta_seconds();
+    let dt = time.delta_secs();
 
     for (mut velocity, transform, mut controller, mass) in query.iter_mut() {
         if !controller.is_moving {

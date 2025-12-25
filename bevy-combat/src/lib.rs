@@ -14,10 +14,10 @@ pub mod damage;
 pub mod effects;
 
 pub mod prelude {
+    pub use crate::BevyCombatPlugin;
     pub use crate::components::*;
     pub use crate::damage::{DamageEvent, DamagePlugin, DeathEvent};
     pub use crate::effects::{DeathEffect, DeathEffectType, EffectsPlugin, HealthBar};
-    pub use crate::BevyCombatPlugin;
 }
 
 use bevy::prelude::*;
@@ -27,9 +27,6 @@ pub struct BevyCombatPlugin;
 
 impl Plugin for BevyCombatPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((
-            damage::DamagePlugin,
-            effects::EffectsPlugin,
-        ));
+        app.add_plugins((damage::DamagePlugin, effects::EffectsPlugin));
     }
 }
