@@ -39,7 +39,7 @@ fn try_load_audio(asset_server: &AssetServer, path: &'static str) -> Option<Hand
 /// Handle audio events and play appropriate sounds
 pub fn handle_audio_events(
     mut commands: Commands,
-    mut audio_events: EventReader<AudioEvent>,
+    mut audio_events: MessageReader<AudioEvent>,
     audio_assets: Res<AudioAssets>,
     settings: Res<AudioSettings>,
 ) {
@@ -105,7 +105,7 @@ pub fn handle_audio_events(
 
 /// Handle unit selection sounds
 pub fn handle_selection_sounds(
-    mut audio_events: EventWriter<AudioEvent>,
+    mut audio_events: MessageWriter<AudioEvent>,
     selection_state: Option<Res<SelectionState>>,
 ) {
     if let Some(selection) = selection_state {
@@ -121,9 +121,9 @@ pub fn handle_selection_sounds(
 
 /// Handle combat sounds by listening to combat events
 pub fn handle_combat_sounds(
-    mut audio_events: EventWriter<AudioEvent>,
-    mut damage_events: Option<EventReader<DamageEvent>>,
-    mut death_events: Option<EventReader<DeathEvent>>,
+    mut audio_events: MessageWriter<AudioEvent>,
+    mut damage_events: Option<MessageReader<DamageEvent>>,
+    mut death_events: Option<MessageReader<DeathEvent>>,
 ) {
     // Listen for damage events
     if let Some(ref mut events) = damage_events {
@@ -152,7 +152,7 @@ pub fn handle_combat_sounds(
 /// Update background music based on game state
 pub fn update_background_music(
     mut commands: Commands,
-    mut audio_events: EventReader<AudioEvent>,
+    mut audio_events: MessageReader<AudioEvent>,
     audio_assets: Res<AudioAssets>,
     mut settings: ResMut<AudioSettings>,
 ) {
@@ -198,3 +198,7 @@ pub struct DamageEvent {
 pub struct DeathEvent {
     pub entity: Entity,
 }
+
+// Implement Message trait for Bevy's message system
+impl bevy::prelude::Message for DamageEvent {}
+impl bevy::prelude::Message for DeathEvent {}

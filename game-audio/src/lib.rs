@@ -21,8 +21,8 @@ impl Plugin for GameAudioPlugin {
         app.init_resource::<AudioAssets>()
             .init_resource::<AudioSettings>();
 
-        // Register audio events
-        app.add_event::<AudioEvent>();
+        // Register audio events using messages like other game systems
+        app.add_message::<AudioEvent>();
 
         // Add startup systems
         app.add_systems(Startup, load_audio_assets);

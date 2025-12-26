@@ -36,3 +36,6 @@ pub enum MusicTrack {
     Victory,
     Defeat,
 }
+
+// Implement Message trait for Bevy's message system
+impl bevy::prelude::Message for AudioEvent {}
