@@ -1,3 +1,19 @@
+//! Unit Spawning System
+//!
+//! This module handles spawning units, leaders, and squads with all necessary components.
+//!
+//! # Physics Integration Note
+//!
+//! Units are spawned with BOTH custom physics components (Velocity, Mass, Friction, etc.)
+//! AND Avian3D physics components (avian::RigidBody, avian::Collider, etc.). This dual
+//! system exists for backward compatibility:
+//!
+//! - **Custom components**: Used by existing game systems in physics_integration.rs
+//! - **Avian3D components**: Handle actual physics simulation and collision avoidance
+//! - **Bridging**: The sync_velocity_system in game-physics bridges between the two
+//!
+//! This allows gradual migration while maintaining existing functionality.
+
 use crate::visuals::*;
 use crate::{
     AuraType, BaseStats, Experience, Leader, Selectable, Team, Unit, VeteranBonus, VeteranStatus,
