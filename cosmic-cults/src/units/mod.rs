@@ -8,6 +8,8 @@ pub mod spawning;
 pub mod visuals;
 pub mod ai;
 pub mod selection;
+pub mod combat;
+pub mod hud;
 
 // Re-exports for easy access
 pub use components::*;
@@ -17,6 +19,8 @@ pub use spawning::*;
 pub use visuals::*;
 pub use ai::*;
 pub use selection::*;
+pub use combat::*;
+pub use hud::*;
 
 // Main plugin for the game-units crate
 #[derive(Default)]
@@ -44,6 +48,8 @@ impl Plugin for GameUnitsPlugin {
                 ),
             )
             .add_plugins(UnitAIPlugin)
-            .add_plugins(selection_plugin);
+            .add_plugins(selection_plugin)
+            .add_plugins(combat_plugin)
+            .add_plugins(hud_plugin);
     }
 }

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use big_brain::prelude::*;
 use crate::units::components::*;
+use crate::units::combat::DamageEvent;
 
 /// Marker component for AI-controlled units
 #[derive(Component, Debug, Reflect, Default)]
@@ -112,6 +113,64 @@ pub fn gather_action_system(
     }
 }
 
+/// Action for a unit to attack a target
+#[derive(ActionBuilder, Component, Debug, Clone, Reflect, Default)]
+#[reflect(Component)]
+pub struct AttackAction;
+
+pub fn attack_action_system(
+    mut action_query: Query<(&Actor, &mut ActionState, &AttackAction)>,
+    mut attacker_query: Query<(&Transform, &mut CombatStats, &AttackTarget, &Team)>,
+    target_query: Query<(&Transform, &Team, &Health)>,
+    time: Res<Time>,
+    mut damage_events: MessageWriter<DamageEvent>,
+) {
+    for (actor, mut state, _attack) in action_query.iter_mut() {
+        if let Ok((attacker_transform, mut stats, target_comp, attacker_team)) = attacker_query.get_mut(actor.0) {
+            let Some(target_entity) = target_comp.entity else {
+                *state = ActionState::Failure;
+                continue;
+            };
+
+            if let Ok((target_transform, target_team, target_health)) = target_query.get(target_entity) {
+                if target_health.current <= 0.0 || target_team.id == attacker_team.id {
+                    *state = ActionState::Success; // Target gone or ally
+                    continue;
+                }
+
+                match *state {
+                    ActionState::Requested => {
+                        *state = ActionState::Executing;
+                    }
+                    ActionState::Executing => {
+                        let dist = attacker_transform.translation.distance(target_transform.translation);
+                        if dist <= stats.attack_range {
+                            // Can attack
+                            if time.elapsed_secs() - stats.last_attack_time >= 1.0 / stats.attack_speed {
+                                damage_events.write(DamageEvent {
+                                    target: target_entity,
+                                    damage: stats.attack_damage,
+                                    attacker: actor.0,
+                                });
+                                stats.last_attack_time = time.elapsed_secs();
+                            }
+                        } else {
+                            // Too far
+                            *state = ActionState::Failure;
+                        }
+                    }
+                    ActionState::Cancelled => {
+                        *state = ActionState::Failure;
+                    }
+                    _ => {}
+                }
+            } else {
+                *state = ActionState::Failure;
+            }
+        }
+    }
+}
+
 // --- Scorers ---
 
 /// Scorer that returns high value if the unit has a movement path
@@ -161,6 +220,35 @@ pub fn near_resource_scorer_system(
     }
 }
 
+/// Scorer that returns high value if an enemy is in range
+#[derive(ScorerBuilder, Component, Debug, Clone, Reflect, Default)]
+#[reflect(Component)]
+pub struct EnemyInRangeScorer;
+
+pub fn enemy_in_range_scorer_system(
+    attacker_query: Query<(&Transform, &Team, &CombatStats), With<Unit>>,
+    target_query: Query<(&Transform, &Team, &Health), With<Unit>>,
+    mut scorer_query: Query<(&Actor, &mut Score), With<EnemyInRangeScorer>>,
+) {
+    for (actor, mut score) in scorer_query.iter_mut() {
+        if let Ok((transform, team, stats)) = attacker_query.get(actor.0) {
+            let mut found = false;
+            for (t_transform, t_team, t_health) in target_query.iter() {
+                if t_team.id != team.id && t_health.current > 0.0 {
+                    if transform.translation.distance(t_transform.translation) <= stats.attack_range {
+                        score.set(1.0);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if !found {
+                score.set(0.0);
+            }
+        }
+    }
+}
+
 /// Plugin to register AI systems
 pub struct UnitAIPlugin;
 
@@ -170,13 +258,17 @@ impl Plugin for UnitAIPlugin {
             .register_type::<UnitAI>()
             .register_type::<MoveToAction>()
             .register_type::<GatherAction>()
+            .register_type::<AttackAction>()
             .register_type::<HasPathScorer>()
             .register_type::<NearResourceScorer>()
+            .register_type::<EnemyInRangeScorer>()
             .add_systems(Update, (
                 move_to_action_system,
                 gather_action_system,
+                attack_action_system,
                 has_path_scorer_system,
                 near_resource_scorer_system,
+                enemy_in_range_scorer_system,
             ));
     }
 }

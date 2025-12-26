@@ -8,9 +8,22 @@ use serde::{Deserialize, Serialize};
 pub struct Unit {
     pub cult: String,
     pub unit_type: String,
-    pub attack_damage: f32,
-    pub attack_speed: f32,
     pub movement_speed: f32,
+}
+
+#[derive(Component, Clone, Debug, Default, Reflect, Serialize, Deserialize)]
+#[reflect(Component)]
+pub struct CombatStats {
+    pub attack_damage: f32,
+    pub attack_speed: f32, // Attacks per second
+    pub attack_range: f32,
+    pub last_attack_time: f32,
+}
+
+#[derive(Component, Clone, Debug, Reflect, Default)]
+#[reflect(Component)]
+pub struct AttackTarget {
+    pub entity: Option<Entity>,
 }
 
 #[derive(Component, Clone, Debug, Default, Reflect, Serialize, Deserialize)]

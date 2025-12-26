@@ -2,6 +2,7 @@ use crate::units::visuals::*;
 use crate::units::{
     AuraType, Experience, Leader, SelectionPriority, Team, Unit, VeteranStatus, Health, MovementPath,
     MoveToAction, HasPathScorer, Resources, GatherAction, NearResourceScorer,
+    CombatStats, AttackTarget, AttackAction, EnemyInRangeScorer,
 };
 use bevy::pbr::StandardMaterial;
 use bevy::prelude::*;
@@ -144,9 +145,7 @@ pub fn spawn_unit(
             Unit {
                 unit_type: unit_type.to_string(),
                 cult: cult.to_string(),
-                attack_damage: 10.0,
                 movement_speed: 5.0,
-                attack_speed: 1.0,
             },
             Health::new(100.0),
             Team {
@@ -159,11 +158,19 @@ pub fn spawn_unit(
             },
             MovementPath::default(),
             Resources::default(),
+            CombatStats {
+                attack_damage: 10.0,
+                attack_speed: 1.0,
+                attack_range: 2.0,
+                last_attack_time: 0.0,
+            },
+            AttackTarget::default(),
         ))
         .insert((
             // === AI COMPONENTS (big-brain) ===
             Thinker::build()
                 .picker(FirstToScore::new(0.1))
+                .when(EnemyInRangeScorer, AttackAction)
                 .when(NearResourceScorer, GatherAction)
                 .when(HasPathScorer, MoveToAction),
         ))
@@ -286,9 +293,7 @@ pub fn spawn_leader(
             Unit {
                 unit_type: "leader".to_string(),
                 cult: cult.to_string(),
-                attack_damage: 25.0,
                 movement_speed: 6.0,
-                attack_speed: 1.5,
             },
             Health::new(200.0),
             Team {
@@ -300,11 +305,20 @@ pub fn spawn_leader(
                 value: 10,
             },
             MovementPath::default(),
+            Resources::default(),
+            CombatStats {
+                attack_damage: 25.0,
+                attack_speed: 1.5,
+                attack_range: 3.0,
+                last_attack_time: 0.0,
+            },
+            AttackTarget::default(),
         ))
         .insert((
             // === AI COMPONENTS (big-brain) ===
             Thinker::build()
                 .picker(FirstToScore::new(0.1))
+                .when(EnemyInRangeScorer, AttackAction)
                 .when(HasPathScorer, MoveToAction),
         ))
         .insert((
@@ -687,9 +701,7 @@ pub fn spawn_unit_from_template(
             Unit {
                 unit_type: template.unit_type.clone(),
                 cult: cult.to_string(),
-                attack_damage: template.base_attack,
                 movement_speed: template.base_speed,
-                attack_speed: template.attack_speed,
             },
             Health::new(template.base_health),
             Team {
@@ -702,11 +714,19 @@ pub fn spawn_unit_from_template(
             },
             MovementPath::default(),
             Resources::default(),
+            CombatStats {
+                attack_damage: template.base_attack,
+                attack_speed: template.attack_speed,
+                attack_range: 2.0,
+                last_attack_time: 0.0,
+            },
+            AttackTarget::default(),
         ))
         .insert((
             // === AI COMPONENTS (big-brain) ===
             Thinker::build()
                 .picker(FirstToScore::new(0.1))
+                .when(EnemyInRangeScorer, AttackAction)
                 .when(NearResourceScorer, GatherAction)
                 .when(HasPathScorer, MoveToAction),
         ))
