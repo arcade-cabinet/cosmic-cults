@@ -343,6 +343,7 @@ pub fn spawn_leader(
                 selection_radius: 2.0,
             },
         ))
+        // Split into second insert to avoid exceeding Bevy's bundle tuple size limit (16 items)
         .insert((
             MovementTarget::new(position.x, position.z, position.z, 6.0),
             MovementPath {
