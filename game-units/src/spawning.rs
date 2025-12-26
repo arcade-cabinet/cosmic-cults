@@ -15,6 +15,10 @@ use std::collections::HashMap;
 #[cfg(feature = "web")]
 use web_sys::console;
 
+// Default fallback values for asset loading
+const DEFAULT_CULT: &str = "crimson_covenant";
+const DEFAULT_UNIT_TYPE: &str = "cultist";
+
 /// Resource containing loaded GLB model handles
 ///
 /// This is now a wrapper around the centralized AssetRegistry from game-assets crate.
@@ -36,18 +40,18 @@ impl GameAssets {
         self.registry
             .get_unit_scene(cult, unit_type)
             .unwrap_or_else(|| {
-                // Fallback to crimson acolyte if not found
+                // Fallback to default if not found
                 self.registry
-                    .get_unit_scene("crimson_covenant", "cultist")
+                    .get_unit_scene(DEFAULT_CULT, DEFAULT_UNIT_TYPE)
                     .expect("Default unit model should always exist")
             })
     }
 
     pub fn get_leader_model(&self, cult: &str) -> Handle<Scene> {
         self.registry.get_leader_scene(cult).unwrap_or_else(|| {
-            // Fallback to blood lord if not found
+            // Fallback to default if not found
             self.registry
-                .get_leader_scene("crimson_covenant")
+                .get_leader_scene(DEFAULT_CULT)
                 .expect("Default leader model should always exist")
         })
     }

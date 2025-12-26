@@ -8,6 +8,13 @@ use bevy::pbr::StandardMaterial;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
+// UI mesh dimension constants
+const HEALTH_BAR_WIDTH: f32 = 2.0;
+const HEALTH_BAR_HEIGHT: f32 = 0.2;
+const HEALTH_BAR_DEPTH: f32 = 0.05;
+const HEALTH_BAR_FILL_SCALE: f32 = 0.95; // 95% of background size
+const HEALTH_BAR_FILL_HEIGHT_SCALE: f32 = 0.8; // 80% of background height
+
 /// Central registry for all game assets
 ///
 /// This resource provides organized access to all loaded game assets,
@@ -212,8 +219,16 @@ impl CommonMeshes {
     fn create(meshes: &mut Assets<Mesh>) -> Self {
         Self {
             selection_ring: meshes.add(Torus::new(0.15, 1.5)),
-            health_bar_background: meshes.add(Cuboid::new(2.0, 0.2, 0.05)),
-            health_bar_fill: meshes.add(Cuboid::new(2.0 * 0.95, 0.2 * 0.8, 0.04)),
+            health_bar_background: meshes.add(Cuboid::new(
+                HEALTH_BAR_WIDTH,
+                HEALTH_BAR_HEIGHT,
+                HEALTH_BAR_DEPTH,
+            )),
+            health_bar_fill: meshes.add(Cuboid::new(
+                HEALTH_BAR_WIDTH * HEALTH_BAR_FILL_SCALE,
+                HEALTH_BAR_HEIGHT * HEALTH_BAR_FILL_HEIGHT_SCALE,
+                HEALTH_BAR_DEPTH * 0.8, // Slightly thinner to avoid z-fighting
+            )),
             aura_sphere: meshes.add(Sphere::new(1.0)),
             leader_platform: meshes.add(Cylinder::new(2.0, 0.3)),
             veteran_star: meshes.add(Sphere::new(0.3)),

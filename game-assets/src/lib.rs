@@ -62,3 +62,9 @@ pub enum Cult {
     /// Void Seekers - Shadow assassins and void magic
     Void,
 }
+
+// Asset path constants for reference or backward compatibility
+// Note: The AssetRegistry in the registry module provides the recommended
+// centralized approach for asset loading. These constants remain for
+// legacy code or direct asset loading when needed.
+pub use models::*;
