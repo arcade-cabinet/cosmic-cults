@@ -331,43 +331,11 @@ fn manhattan_distance(a: (i32, i32), b: (i32, i32)) -> i32 {
 }
 
 /// Debug system to visualize the map grid
-/// Currently disabled due to Gizmos type compatibility issues
+/// TODO: Re-enable when Gizmos type compatibility is resolved with Bevy 0.17
 #[allow(dead_code)]
 pub fn debug_draw_map_grid() {
-    // Note: Gizmos functionality disabled to avoid compilation issues
-    // Re-enable by uncommenting and fixing the Gizmos type
-
-    /*
-    let game_map: Res<GameMap> = ...;
-    let mut _gizmos: bevy::gizmos::Gizmos = ...;
-    let _half_width = game_map.width / 2;
-    let _half_height = game_map.height / 2;
-
-    // Draw grid lines
-    for x in -half_width..=half_width {
-        let start = grid_to_world(x, -half_height, game_map.tile_size);
-        let end = grid_to_world(x, half_height, game_map.tile_size);
-        _gizmos.line(start, end, Color::srgba(0.2, 0.2, 0.2, 0.3));
-    }
-
-    for z in -half_height..=half_height {
-        let start = grid_to_world(-half_width, z, game_map.tile_size);
-        let end = grid_to_world(half_width, z, game_map.tile_size);
-        _gizmos.line(start, end, Color::srgba(0.2, 0.2, 0.2, 0.3));
-    }
-
-    // Highlight starting position
-    let start_pos = grid_to_world(
-        game_map.starting_position.0,
-        game_map.starting_position.1,
-        game_map.tile_size,
-    );
-    _gizmos.circle(
-        start_pos + Vec3::Y * 0.1,
-        game_map.tile_size * 0.4,
-        Color::srgb(0.0, 1.0, 0.0),
-    );
-    */
+    // This function is currently disabled due to Gizmos type compatibility issues.
+    // The debug grid visualization will be restored in a future update.
 }
 
 // ==============================================================================
