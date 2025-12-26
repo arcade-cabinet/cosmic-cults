@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use big_brain::prelude::*;
 use crate::units::components::*;
 use crate::units::combat::DamageEvent;
+use avian3d::prelude::*;
 
 /// Marker component for AI-controlled units
 #[derive(Component, Debug, Reflect, Default)]
@@ -17,17 +18,18 @@ pub struct MoveToAction;
 
 pub fn move_to_action_system(
     mut action_query: Query<(&Actor, &mut ActionState, &MoveToAction)>,
-    mut unit_query: Query<(&mut Transform, &Unit, &MovementPath)>,
-    time: Res<Time>,
+    mut unit_query: Query<(&Transform, &mut LinearVelocity, &Unit, &MovementPath)>,
+    _time: Res<Time>,
 ) {
     for (actor, mut state, _move_to) in action_query.iter_mut() {
-        if let Ok((mut transform, unit, path)) = unit_query.get_mut(actor.0) {
+        if let Ok((transform, mut velocity, unit, path)) = unit_query.get_mut(actor.0) {
             match *state {
                 ActionState::Requested => {
                     *state = ActionState::Executing;
                 }
                 ActionState::Executing => {
                     if path.waypoints.is_empty() {
+                        velocity.0 = Vec3::ZERO;
                         *state = ActionState::Success;
                         return;
                     }
@@ -36,18 +38,16 @@ pub fn move_to_action_system(
                     let direction = target - transform.translation;
                     let distance = direction.length();
 
-                    if distance < 0.2 {
+                    if distance < 0.5 {
+                        velocity.0 = Vec3::ZERO;
                         *state = ActionState::Success;
                     } else {
                         let move_dir = direction.normalize();
-                        transform.translation += move_dir * unit.movement_speed * time.delta_secs();
-                        
-                        // Rotate towards movement
-                        let target_rotation = Quat::from_rotation_y(move_dir.x.atan2(move_dir.z));
-                        transform.rotation = transform.rotation.slerp(target_rotation, 5.0 * time.delta_secs());
+                        velocity.0 = move_dir * unit.movement_speed;
                     }
                 }
                 ActionState::Cancelled => {
+                    velocity.0 = Vec3::ZERO;
                     *state = ActionState::Failure;
                 }
                 _ => {}
@@ -64,7 +64,8 @@ pub struct GatherAction;
 pub fn gather_action_system(
     mut action_query: Query<(&Actor, &mut ActionState, &GatherAction)>,
     mut unit_query: Query<(&Transform, &mut Resources, &Team)>,
-    mut node_query: Query<(Entity, &Transform, &mut ResourceNode)>,
+    mut node_query: Query<&mut ResourceNode>,
+    spatial_query: SpatialQuery,
     time: Res<Time>,
 ) {
     for (actor, mut state, _gather) in action_query.iter_mut() {
@@ -74,31 +75,38 @@ pub fn gather_action_system(
                     *state = ActionState::Executing;
                 }
                 ActionState::Executing => {
-                    // Find nearest resource node
-                    let mut nearest_node = None;
-                    let mut min_dist = 2.0; // Gathering range
+                    // Find nearest resource node using spatial query
+                    let mut nearest_node_entity = None;
+                    
+                    let intersections = spatial_query.shape_intersections(
+                        &Collider::sphere(2.0),
+                        transform.translation,
+                        Quat::IDENTITY,
+                        &SpatialQueryFilter::default(),
+                    );
 
-                    for (node_entity, node_transform, node) in node_query.iter_mut() {
-                        let dist = transform.translation.distance(node_transform.translation);
-                        if dist < min_dist {
-                            min_dist = dist;
-                            nearest_node = Some((node_entity, node));
+                    for entity in intersections {
+                        if node_query.contains(entity) {
+                            nearest_node_entity = Some(entity);
+                            break;
                         }
                     }
 
-                    if let Some((_entity, mut node)) = nearest_node {
-                        let gather_rate = 10.0 * time.delta_secs();
-                        let amount = gather_rate.min(node.amount);
-                        
-                        node.amount -= amount;
-                        match node.resource_type {
-                            ResourceType::Energy => resources.energy += amount,
-                            ResourceType::Materials => resources.materials += amount,
-                            ResourceType::Favor => resources.favor += amount,
-                        }
+                    if let Some(entity) = nearest_node_entity {
+                        if let Ok(mut node) = node_query.get_mut(entity) {
+                            let gather_rate = 10.0 * time.delta_secs();
+                            let amount = gather_rate.min(node.amount);
+                            
+                            node.amount -= amount;
+                            match node.resource_type {
+                                ResourceType::Energy => resources.energy += amount,
+                                ResourceType::Materials => resources.materials += amount,
+                                ResourceType::Favor => resources.favor += amount,
+                            }
 
-                        if node.amount <= 0.0 {
-                            *state = ActionState::Success;
+                            if node.amount <= 0.0 {
+                                *state = ActionState::Success;
+                            }
                         }
                     } else {
                         *state = ActionState::Failure;
@@ -155,7 +163,8 @@ pub fn attack_action_system(
                                 stats.last_attack_time = time.elapsed_secs();
                             }
                         } else {
-                            // Too far
+                            // Too far - check if we can find any other target in range?
+                            // For now, failure if current target is out of range
                             *state = ActionState::Failure;
                         }
                     }
@@ -165,6 +174,7 @@ pub fn attack_action_system(
                     _ => {}
                 }
             } else {
+                // Target might have been despawned
                 *state = ActionState::Failure;
             }
         }
@@ -200,20 +210,24 @@ pub struct NearResourceScorer;
 
 pub fn near_resource_scorer_system(
     unit_query: Query<&Transform, With<Unit>>,
-    node_query: Query<&Transform, With<ResourceNode>>,
+    node_query: Query<&ResourceNode>,
+    spatial_query: SpatialQuery,
     mut scorer_query: Query<(&Actor, &mut Score), With<NearResourceScorer>>,
 ) {
     for (actor, mut score) in scorer_query.iter_mut() {
         if let Ok(transform) = unit_query.get(actor.0) {
-            let mut found = false;
-            for node_transform in node_query.iter() {
-                if transform.translation.distance(node_transform.translation) < 2.0 {
-                    score.set(1.0);
-                    found = true;
-                    break;
-                }
-            }
-            if !found {
+            let intersections = spatial_query.shape_intersections(
+                &Collider::sphere(2.0),
+                transform.translation,
+                Quat::IDENTITY,
+                &SpatialQueryFilter::default(),
+            );
+            
+            let found = intersections.iter().any(|&entity| node_query.contains(entity));
+            
+            if found {
+                score.set(1.0);
+            } else {
                 score.set(0.0);
             }
         }
@@ -227,22 +241,32 @@ pub struct EnemyInRangeScorer;
 
 pub fn enemy_in_range_scorer_system(
     attacker_query: Query<(&Transform, &Team, &CombatStats), With<Unit>>,
-    target_query: Query<(&Transform, &Team, &Health), With<Unit>>,
+    target_query: Query<(&Team, &Health), With<Unit>>,
+    spatial_query: SpatialQuery,
     mut scorer_query: Query<(&Actor, &mut Score), With<EnemyInRangeScorer>>,
 ) {
     for (actor, mut score) in scorer_query.iter_mut() {
         if let Ok((transform, team, stats)) = attacker_query.get(actor.0) {
+            let intersections = spatial_query.shape_intersections(
+                &Collider::sphere(stats.attack_range),
+                transform.translation,
+                Quat::IDENTITY,
+                &SpatialQueryFilter::default(),
+            );
+
             let mut found = false;
-            for (t_transform, t_team, t_health) in target_query.iter() {
-                if t_team.id != team.id && t_health.current > 0.0 {
-                    if transform.translation.distance(t_transform.translation) <= stats.attack_range {
-                        score.set(1.0);
+            for entity in intersections {
+                if let Ok((t_team, t_health)) = target_query.get(entity) {
+                    if t_team.id != team.id && t_health.current > 0.0 {
                         found = true;
                         break;
                     }
                 }
             }
-            if !found {
+
+            if found {
+                score.set(1.0);
+            } else {
                 score.set(0.0);
             }
         }
