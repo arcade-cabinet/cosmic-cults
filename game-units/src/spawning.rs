@@ -196,11 +196,11 @@ pub fn spawn_unit(
             avian::RigidBody::Dynamic,
             avian::Collider::capsule(0.5, 1.5), // Capsule collider: radius 0.5, half-height 1.5
             avian::CollisionLayers::new([0], [0, 1]), // Layer 0, collides with 0 (units) and 1 (terrain)
-            avian::Friction::new(0.4),          // Moderate friction to prevent sliding
-            avian::Restitution::new(0.1),       // Low bounciness for realistic movement
+            avian::Friction::new(0.4),                // Moderate friction to prevent sliding
+            avian::Restitution::new(0.1),             // Low bounciness for realistic movement
             avian::LockedAxes::new().lock_rotation_x().lock_rotation_z(), // Lock X/Z rotation, allow Y
-            avian::LinearDamping(0.5),          // Damping to prevent excessive speed
-            avian::AngularDamping(1.0),         // Higher angular damping for stability
+            avian::LinearDamping(0.5), // Damping to prevent excessive speed
+            avian::AngularDamping(1.0), // Higher angular damping for stability
         ))
         .insert((
             // === MOVEMENT & STATS COMPONENTS ===
@@ -400,7 +400,7 @@ pub fn spawn_leader(
             },
             Velocity::default(),
             AABB::from_size(Vec3::new(1.2, 2.4, 1.2)), // Larger collision box for leaders
-            Mass::new(1.5),                             // Heavier than regular units
+            Mass::new(1.5),                            // Heavier than regular units
             Friction::default(),
             RigidBodyType {
                 body_type: RigidBodyVariant::Dynamic,
