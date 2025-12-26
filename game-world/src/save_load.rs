@@ -117,6 +117,8 @@ pub fn save_game(
     );
 
     // Serialize units
+    // TODO: Extract actual unit data from components instead of using hardcoded values
+    // This will require querying additional components like Health, Experience, etc.
     for (transform, _unit) in units_query.iter() {
         let unit = SerializableUnit {
             position: (
@@ -141,6 +143,8 @@ pub fn save_game(
     }
 
     // Serialize leaders
+    // TODO: Extract actual leader data from components instead of using hardcoded values
+    // This will require accessing CultLeader component fields
     for (transform, _leader) in leaders_query.iter() {
         let leader = SerializableLeader {
             position: (
@@ -193,6 +197,8 @@ pub fn apply_game_state(
     *visibility_map = game_state.visibility_map;
 
     // Spawn units
+    // TODO: Map unit_type string back to appropriate UnitType enum variant
+    // Currently all units are spawned as Acolyte
     for unit in game_state.units {
         commands.spawn((
             Transform::from_translation(Vec3::new(
@@ -213,6 +219,8 @@ pub fn apply_game_state(
     }
 
     // Spawn leaders
+    // TODO: Map cult string back to appropriate Cult enum and preserve leader level
+    // Currently all leaders are spawned as Crimson cult with level 1
     for leader in game_state.leaders {
         commands.spawn((
             Transform::from_translation(Vec3::new(
