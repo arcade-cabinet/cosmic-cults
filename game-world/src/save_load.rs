@@ -195,13 +195,17 @@ pub fn apply_game_state(
     // Spawn units
     for unit in game_state.units {
         commands.spawn((
-            Transform::from_translation(Vec3::new(unit.position.0, unit.position.1, unit.position.2))
-                .with_rotation(Quat::from_xyzw(
-                    unit.rotation.0,
-                    unit.rotation.1,
-                    unit.rotation.2,
-                    unit.rotation.3,
-                )),
+            Transform::from_translation(Vec3::new(
+                unit.position.0,
+                unit.position.1,
+                unit.position.2,
+            ))
+            .with_rotation(Quat::from_xyzw(
+                unit.rotation.0,
+                unit.rotation.1,
+                unit.rotation.2,
+                unit.rotation.3,
+            )),
             crate::PlayerUnit {
                 unit_type: crate::spawning::UnitType::Acolyte,
             },
