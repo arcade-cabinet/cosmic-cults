@@ -57,6 +57,8 @@ impl GameAssets {
     }
 
     // Direct access to common meshes
+    // Note: These methods clone the Handle (which is cheap), not the mesh data.
+    // The method approach provides a consistent API and the overhead is negligible.
     pub fn selection_mesh(&self) -> Handle<Mesh> {
         self.registry.common_meshes.selection_ring.clone()
     }

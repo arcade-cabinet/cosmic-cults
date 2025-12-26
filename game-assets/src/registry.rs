@@ -14,6 +14,7 @@ const HEALTH_BAR_HEIGHT: f32 = 0.2;
 const HEALTH_BAR_DEPTH: f32 = 0.05;
 const HEALTH_BAR_FILL_SCALE: f32 = 0.95; // 95% of background size
 const HEALTH_BAR_FILL_HEIGHT_SCALE: f32 = 0.8; // 80% of background height
+const HEALTH_BAR_FILL_DEPTH_SCALE: f32 = 0.8; // 80% of background depth to avoid z-fighting
 
 /// Central registry for all game assets
 ///
@@ -227,7 +228,7 @@ impl CommonMeshes {
             health_bar_fill: meshes.add(Cuboid::new(
                 HEALTH_BAR_WIDTH * HEALTH_BAR_FILL_SCALE,
                 HEALTH_BAR_HEIGHT * HEALTH_BAR_FILL_HEIGHT_SCALE,
-                HEALTH_BAR_DEPTH * 0.8, // Slightly thinner to avoid z-fighting
+                HEALTH_BAR_DEPTH * HEALTH_BAR_FILL_DEPTH_SCALE,
             )),
             aura_sphere: meshes.add(Sphere::new(1.0)),
             leader_platform: meshes.add(Cylinder::new(2.0, 0.3)),
