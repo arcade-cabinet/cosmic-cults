@@ -3,8 +3,8 @@
 //! Demonstrates the physics system with moving entities and collision detection.
 //! Run with: cargo run --example basic_physics
 
-use bevy::prelude::*;
 use avian3d::prelude::*;
+use bevy::prelude::*;
 use rand::random;
 
 fn main() {

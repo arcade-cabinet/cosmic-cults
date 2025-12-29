@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::units::components::*;
+use bevy::prelude::*;
 
 #[derive(Resource, Default)]
 pub struct SelectionState {
@@ -8,9 +8,9 @@ pub struct SelectionState {
 
 pub fn selection_plugin(app: &mut App) {
     app.init_resource::<SelectionState>()
-       .add_systems(Update, update_selection_visuals)
-       .add_observer(on_unit_click)
-       .add_observer(on_ground_click);
+        .add_systems(Update, update_selection_visuals)
+        .add_observer(on_unit_click)
+        .add_observer(on_ground_click);
 }
 
 fn on_unit_click(
@@ -55,7 +55,9 @@ fn on_ground_click(
     }
 
     // Get the hit position
-    let Some(hit_pos) = trigger.hit.position else { return };
+    let Some(hit_pos) = trigger.hit.position else {
+        return;
+    };
 
     for entity in selected_query.iter() {
         if let Ok(mut path) = unit_query.get_mut(entity) {

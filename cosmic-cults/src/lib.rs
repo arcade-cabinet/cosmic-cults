@@ -8,4 +8,4 @@ pub use world::GameWorldPlugin;
 
 // Re-export common types
 pub use assets::Cult;
-pub use units::{Unit, Team, Leader, Health};
+pub use units::{Health, Leader, Team, Unit};

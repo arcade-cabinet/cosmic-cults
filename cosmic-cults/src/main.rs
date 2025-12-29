@@ -1,10 +1,10 @@
+use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_rts_camera::RtsCameraPlugin;
+use big_brain::BigBrainPlugin;
 use cosmic_cults::{GameUnitsPlugin, GameWorldPlugin};
 use leafwing_input_manager::prelude::*;
-use avian3d::prelude::*;
-use big_brain::BigBrainPlugin;
 
 fn main() {
     App::new()

@@ -19,3 +19,12 @@ Developing core gameplay mechanics: Combat, Resource Gathering, and HUD integrat
 - Merge PR #21 to establish the new baseline.
 - Ensure all CI/CD workflows are passing in the new location.
 - Begin implementation of resource gathering and expanded cult mechanics.
+
+## Session: 2025-12-29
+
+### Completed
+- Fixed CI failures in PR #21:
+    - Resolved widespread formatting issues using 'cargo fmt'.
+    - Fixed a clippy warning regarding collapsible 'if' statements in 'cosmic-cults/src/units/ai.rs'.
+    - Verified fixes by running 'cargo fmt --check' and 'cargo clippy' locally.
+

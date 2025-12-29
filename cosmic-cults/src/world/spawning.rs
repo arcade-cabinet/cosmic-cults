@@ -1,8 +1,8 @@
 //! World entity spawning system for Cosmic Dominion
 
 use crate::assets::{Cult, models};
-use crate::world::fog::{Faction, VisionProvider};
 use crate::units::components::{ResourceNode, ResourceType};
+use crate::world::fog::{Faction, VisionProvider};
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::Indices;
 use bevy::prelude::*;
@@ -116,8 +116,20 @@ pub fn spawn_starting_scene(
     spawn_ritual_circle(&mut commands, &mut meshes, &mut materials, Vec3::ZERO);
 
     // Spawn some resource nodes
-    spawn_resource_node(&mut commands, &mut meshes, &mut materials, Vec3::new(10.0, 0.0, 0.0), ResourceType::Energy);
-    spawn_resource_node(&mut commands, &mut meshes, &mut materials, Vec3::new(-10.0, 0.0, 5.0), ResourceType::Materials);
+    spawn_resource_node(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        Vec3::new(10.0, 0.0, 0.0),
+        ResourceType::Energy,
+    );
+    spawn_resource_node(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        Vec3::new(-10.0, 0.0, 5.0),
+        ResourceType::Materials,
+    );
 }
 
 /// Spawn a resource node

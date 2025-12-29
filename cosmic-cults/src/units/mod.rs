@@ -1,26 +1,26 @@
 use bevy::prelude::*;
 
 // Module declarations
+pub mod ai;
+pub mod combat;
 pub mod components;
 pub mod formations;
+pub mod hud;
 pub mod leadership;
+pub mod selection;
 pub mod spawning;
 pub mod visuals;
-pub mod ai;
-pub mod selection;
-pub mod combat;
-pub mod hud;
 
 // Re-exports for easy access
+pub use ai::*;
+pub use combat::*;
 pub use components::*;
 pub use formations::*;
+pub use hud::*;
 pub use leadership::*;
+pub use selection::*;
 pub use spawning::*;
 pub use visuals::*;
-pub use ai::*;
-pub use selection::*;
-pub use combat::*;
-pub use hud::*;
 
 // Main plugin for the game-units crate
 #[derive(Default)]

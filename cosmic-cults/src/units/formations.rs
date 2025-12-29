@@ -1,4 +1,4 @@
-use crate::units::{FormationType};
+use crate::units::FormationType;
 use bevy::prelude::*;
 
 // Calculate formation offset based on formation type

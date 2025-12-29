@@ -1,8 +1,8 @@
+use crate::units::combat::DamageEvent;
+use crate::units::components::*;
+use avian3d::prelude::*;
 use bevy::prelude::*;
 use big_brain::prelude::*;
-use crate::units::components::*;
-use crate::units::combat::DamageEvent;
-use avian3d::prelude::*;
 
 /// Marker component for AI-controlled units
 #[derive(Component, Debug, Reflect, Default)]
@@ -77,7 +77,7 @@ pub fn gather_action_system(
                 ActionState::Executing => {
                     // Find nearest resource node using spatial query
                     let mut nearest_node_entity = None;
-                    
+
                     let intersections = spatial_query.shape_intersections(
                         &Collider::sphere(2.0),
                         transform.translation,
@@ -96,7 +96,7 @@ pub fn gather_action_system(
                         if let Ok(mut node) = node_query.get_mut(entity) {
                             let gather_rate = 10.0 * time.delta_secs();
                             let amount = gather_rate.min(node.amount);
-                            
+
                             node.amount -= amount;
                             match node.resource_type {
                                 ResourceType::Energy => resources.energy += amount,
@@ -134,13 +134,17 @@ pub fn attack_action_system(
     mut damage_events: MessageWriter<DamageEvent>,
 ) {
     for (actor, mut state, _attack) in action_query.iter_mut() {
-        if let Ok((attacker_transform, mut stats, target_comp, attacker_team)) = attacker_query.get_mut(actor.0) {
+        if let Ok((attacker_transform, mut stats, target_comp, attacker_team)) =
+            attacker_query.get_mut(actor.0)
+        {
             let Some(target_entity) = target_comp.entity else {
                 *state = ActionState::Failure;
                 continue;
             };
 
-            if let Ok((target_transform, target_team, target_health)) = target_query.get(target_entity) {
+            if let Ok((target_transform, target_team, target_health)) =
+                target_query.get(target_entity)
+            {
                 if target_health.current <= 0.0 || target_team.id == attacker_team.id {
                     *state = ActionState::Success; // Target gone or ally
                     continue;
@@ -151,10 +155,14 @@ pub fn attack_action_system(
                         *state = ActionState::Executing;
                     }
                     ActionState::Executing => {
-                        let dist = attacker_transform.translation.distance(target_transform.translation);
+                        let dist = attacker_transform
+                            .translation
+                            .distance(target_transform.translation);
                         if dist <= stats.attack_range {
                             // Can attack
-                            if time.elapsed_secs() - stats.last_attack_time >= 1.0 / stats.attack_speed {
+                            if time.elapsed_secs() - stats.last_attack_time
+                                >= 1.0 / stats.attack_speed
+                            {
                                 damage_events.write(DamageEvent {
                                     target: target_entity,
                                     damage: stats.attack_damage,
@@ -222,9 +230,11 @@ pub fn near_resource_scorer_system(
                 Quat::IDENTITY,
                 &SpatialQueryFilter::default(),
             );
-            
-            let found = intersections.iter().any(|&entity| node_query.contains(entity));
-            
+
+            let found = intersections
+                .iter()
+                .any(|&entity| node_query.contains(entity));
+
             if found {
                 score.set(1.0);
             } else {
@@ -256,11 +266,12 @@ pub fn enemy_in_range_scorer_system(
 
             let mut found = false;
             for entity in intersections {
-                if let Ok((t_team, t_health)) = target_query.get(entity) {
-                    if t_team.id != team.id && t_health.current > 0.0 {
-                        found = true;
-                        break;
-                    }
+                let Ok((t_team, t_health)) = target_query.get(entity) else {
+                    continue;
+                };
+                if t_team.id != team.id && t_health.current > 0.0 {
+                    found = true;
+                    break;
                 }
             }
 
@@ -278,21 +289,23 @@ pub struct UnitAIPlugin;
 
 impl Plugin for UnitAIPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .register_type::<UnitAI>()
+        app.register_type::<UnitAI>()
             .register_type::<MoveToAction>()
             .register_type::<GatherAction>()
             .register_type::<AttackAction>()
             .register_type::<HasPathScorer>()
             .register_type::<NearResourceScorer>()
             .register_type::<EnemyInRangeScorer>()
-            .add_systems(Update, (
-                move_to_action_system,
-                gather_action_system,
-                attack_action_system,
-                has_path_scorer_system,
-                near_resource_scorer_system,
-                enemy_in_range_scorer_system,
-            ));
+            .add_systems(
+                Update,
+                (
+                    move_to_action_system,
+                    gather_action_system,
+                    attack_action_system,
+                    has_path_scorer_system,
+                    near_resource_scorer_system,
+                    enemy_in_range_scorer_system,
+                ),
+            );
     }
 }

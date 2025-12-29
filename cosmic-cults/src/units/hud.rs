@@ -1,13 +1,10 @@
-use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
 use crate::units::components::*;
 use crate::units::selection::SelectionState;
+use bevy::prelude::*;
+use bevy_egui::{EguiContexts, egui};
 
 pub fn hud_plugin(app: &mut App) {
-    app.add_systems(Update, (
-        draw_resource_hud,
-        draw_selection_hud,
-    ));
+    app.add_systems(Update, (draw_resource_hud, draw_selection_hud));
 }
 
 fn draw_resource_hud(
@@ -50,7 +47,10 @@ fn draw_selection_hud(
             if let Ok((unit, health, combat)) = unit_query.get(entity) {
                 ui.group(|ui| {
                     ui.label(format!("Type: {}", unit.unit_type));
-                    ui.label(format!("Health: {:.0}/{:.0}", health.current, health.maximum));
+                    ui.label(format!(
+                        "Health: {:.0}/{:.0}",
+                        health.current, health.maximum
+                    ));
                     if let Some(stats) = combat {
                         ui.label(format!("Damage: {:.0}", stats.attack_damage));
                     }

@@ -11,6 +11,7 @@
 - [x] Implementation of Resource Gathering (GatherAction, ResourceNode management).
 - [x] Integration of Egui HUD for resources and selection.
 - [x] Fixed CI workflow system dependencies for Bevy 0.17.
+- [x] Fixed CI failures in PR #21 (formatting and clippy).
 - [x] Shored up AI with physics-based movement and optimized spatial queries.
 - [x] Identified and created issues for remaining technical "bulwarks".
 

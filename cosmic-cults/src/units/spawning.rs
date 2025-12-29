@@ -1,13 +1,13 @@
 use crate::units::visuals::*;
 use crate::units::{
-    AuraType, Experience, Leader, SelectionPriority, Team, Unit, VeteranStatus, Health, MovementPath,
-    MoveToAction, HasPathScorer, Resources, GatherAction, NearResourceScorer,
-    CombatStats, AttackTarget, AttackAction, EnemyInRangeScorer,
+    AttackAction, AttackTarget, AuraType, CombatStats, EnemyInRangeScorer, Experience,
+    GatherAction, HasPathScorer, Health, Leader, MoveToAction, MovementPath, NearResourceScorer,
+    Resources, SelectionPriority, Team, Unit, VeteranStatus,
 };
+use avian3d::prelude::*;
 use bevy::pbr::StandardMaterial;
 use bevy::prelude::*;
 use bevy::render::alpha::AlphaMode;
-use avian3d::prelude::*;
 use big_brain::prelude::*;
 use std::collections::HashMap;
 #[cfg(feature = "web")]
@@ -153,9 +153,7 @@ pub fn spawn_unit(
                 cult: cult.to_string(),
                 color: cult_color,
             },
-            SelectionPriority {
-                value: 1,
-            },
+            SelectionPriority { value: 1 },
             MovementPath::default(),
             Resources::default(),
             CombatStats {
@@ -186,13 +184,8 @@ pub fn spawn_unit(
         ))
         .insert((
             // === PROGRESSION ===
-            Experience {
-                level: 1,
-                total: 0,
-            },
-            VeteranStatus {
-                tier: 0,
-            },
+            Experience { level: 1, total: 0 },
+            VeteranStatus { tier: 0 },
         ))
         .with_children(|parent| {
             // === SELECTION INDICATOR (initially hidden) ===
@@ -301,9 +294,7 @@ pub fn spawn_leader(
                 cult: cult.to_string(),
                 color: cult_color,
             },
-            SelectionPriority {
-                value: 10,
-            },
+            SelectionPriority { value: 10 },
             MovementPath::default(),
             Resources::default(),
             CombatStats {
@@ -337,9 +328,7 @@ pub fn spawn_leader(
                 level: 5,
                 total: 1000,
             },
-            VeteranStatus {
-                tier: 3,
-            },
+            VeteranStatus { tier: 3 },
         ))
         .with_children(|parent| {
             // === AURA VISUAL EFFECT ===
@@ -709,9 +698,7 @@ pub fn spawn_unit_from_template(
                 cult: cult.to_string(),
                 color: cult_color,
             },
-            SelectionPriority {
-                value: 1,
-            },
+            SelectionPriority { value: 1 },
             MovementPath::default(),
             Resources::default(),
             CombatStats {
@@ -740,15 +727,7 @@ pub fn spawn_unit_from_template(
             Friction::new(0.5),
             Restitution::new(0.1),
         ))
-        .insert((
-            Experience {
-                level: 1,
-                total: 0,
-            },
-            VeteranStatus {
-                tier: 0,
-            },
-        ))
+        .insert((Experience { level: 1, total: 0 }, VeteranStatus { tier: 0 }))
         .with_children(|parent| {
             // Add visual children (health bar, selection indicator, etc.)
             // === SELECTION INDICATOR ===

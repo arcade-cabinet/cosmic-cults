@@ -3,10 +3,10 @@
 //! Demonstrates unit formations and group movement.
 //! Run with: cargo run --example formations
 
-use bevy::prelude::*;
-use cosmic_cults::{GameUnitsPlugin, GameWorldPlugin};
 use avian3d::prelude::*;
+use bevy::prelude::*;
 use big_brain::BigBrainPlugin;
+use cosmic_cults::{GameUnitsPlugin, GameWorldPlugin};
 
 fn main() {
     App::new()

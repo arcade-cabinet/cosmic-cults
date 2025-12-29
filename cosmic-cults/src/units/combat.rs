@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::units::components::*;
+use bevy::prelude::*;
 
 #[derive(Message, Debug, Clone)]
 pub struct DamageEvent {
@@ -10,10 +10,7 @@ pub struct DamageEvent {
 
 pub fn combat_plugin(app: &mut App) {
     app.add_message::<DamageEvent>()
-       .add_systems(Update, (
-           handle_damage_events,
-           death_system,
-       ));
+        .add_systems(Update, (handle_damage_events, death_system));
 }
 
 fn handle_damage_events(
@@ -27,9 +24,7 @@ fn handle_damage_events(
     }
 }
 
-fn death_system(
-    query: Query<(Entity, &Health), Changed<Health>>,
-) {
+fn death_system(query: Query<(Entity, &Health), Changed<Health>>) {
     for (_entity, health) in query.iter() {
         if health.current <= 0.0 {
             // Visual systems handle the rest
