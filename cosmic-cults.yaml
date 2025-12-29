@@ -1,0 +1,65 @@
+# Cosmic Cults - Vintage Game Generator Configuration
+# "Warcraft meets Cthulhu" old-school RTS
+
+name: cosmic-cults
+version: 0.1.0
+engine: bevy-0.17
+genre: rts
+style: old-school
+
+# Integration Points
+ai:
+  client: ai-asset-generator
+  toolkit: bevy-ai-toolkit
+  themes:
+    - lovecraftian
+    - cosmic-horror
+
+# Combat Configuration
+combat:
+  system: game-combat
+  features:
+    - damage-types
+    - status-effects
+    - xp-progression
+
+# Factions (Cults)
+factions:
+  - id: order-of-the-deep
+    name: "Order of the Deep"
+    theme: "Knowledge-focused, defensive cult"
+    primary_resource: "knowledge"
+  - id: crimson-covenant
+    name: "Crimson Covenant"
+    theme: "Blood-focused, aggressive cult"
+    primary_resource: "blood"
+  - id: void-seekers
+    name: "Void Seekers"
+    theme: "Corruption-focused, mystical cult"
+    primary_resource: "corruption"
+
+# Scaffold configuration
+scaffold:
+  crates:
+    - name: game-ai
+      type: game-logic
+      dependencies:
+        - bevy-ai-toolkit
+        - game-physics
+        - game-units
+    - name: game-combat
+      type: game-logic
+      dependencies:
+        - game-physics
+        - game-units
+    - name: game-runner
+      type: main
+      dependencies:
+        - game-ai
+        - game-combat
+        - game-physics
+        - game-units
+        - game-world
+        - game-assets
+        - game-ui
+        - game-audio
