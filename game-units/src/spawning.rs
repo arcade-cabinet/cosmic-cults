@@ -1,3 +1,19 @@
+//! Unit Spawning System
+//!
+//! This module handles spawning units, leaders, and squads with all necessary components.
+//!
+//! # Physics Integration Note
+//!
+//! Units are spawned with BOTH custom physics components (Velocity, Mass, Friction, etc.)
+//! AND Avian3D physics components (avian::RigidBody, avian::Collider, etc.). This dual
+//! system exists for backward compatibility:
+//!
+//! - **Custom components**: Used by existing game systems in physics_integration.rs
+//! - **Avian3D components**: Handle actual physics simulation and collision avoidance
+//! - **Bridging**: The sync_velocity_system in game-physics bridges between the two
+//!
+//! This allows gradual migration while maintaining existing functionality.
+
 use crate::visuals::*;
 use crate::{
     AuraType, BaseStats, Experience, Faction, Leader, Selectable, Team, Unit, VeteranBonus,
@@ -176,6 +192,17 @@ pub fn spawn_unit(
             avian::LinearVelocity(Vec3::ZERO),
             avian::AngularVelocity::ZERO,
             avian::Collider::cylinder(0.5, 1.0), // Cylinder collider for unit
+        ))
+        .insert((
+            // === AVIAN3D PHYSICS COMPONENTS ===
+            avian::RigidBody::Dynamic,
+            avian::Collider::capsule(0.5, 1.5), // Capsule collider: radius 0.5, half-height 1.5
+            avian::CollisionLayers::new([0], [0, 1]), // Layer 0, collides with 0 (units) and 1 (terrain)
+            avian::Friction::new(0.4),                // Moderate friction to prevent sliding
+            avian::Restitution::new(0.1),             // Low bounciness for realistic movement
+            avian::LockedAxes::new().lock_rotation_x().lock_rotation_z(), // Lock X/Z rotation, allow Y
+            avian::LinearDamping(0.5), // Damping to prevent excessive speed
+            avian::AngularDamping(1.0), // Higher angular damping for stability
         ))
         .insert((
             // === MOVEMENT & STATS COMPONENTS ===
@@ -368,6 +395,43 @@ pub fn spawn_leader(
                 sight_range: 40.0,
                 faction: get_faction(team_id),
             },
+        ))
+        .insert((
+            // === PHYSICS COMPONENTS ===
+            MovementController {
+                target_position: None,
+                velocity: Vec3::ZERO,
+                max_speed: 6.0,
+                acceleration: 10.0,
+                rotation_speed: 5.0,
+                path_index: 0,
+                waypoints: Vec::new(),
+                is_moving: false,
+                movement_type: game_physics::MovementType::Ground,
+            },
+            Velocity::default(),
+            AABB::from_size(Vec3::new(1.2, 2.4, 1.2)), // Larger collision box for leaders
+            Mass::new(1.5),                            // Heavier than regular units
+            Friction::default(),
+            RigidBodyType {
+                body_type: RigidBodyVariant::Dynamic,
+            },
+            CollisionMask {
+                layer: 1,
+                mask: u32::MAX,
+            },
+            SpatialData::new(position),
+        ))
+        .insert((
+            // === AVIAN3D PHYSICS COMPONENTS ===
+            avian::RigidBody::Dynamic,
+            avian::Collider::capsule(0.6, 1.8), // Larger capsule for leaders
+            avian::CollisionLayers::new([0], [0, 1]),
+            avian::Friction::new(0.4),
+            avian::Restitution::new(0.1),
+            avian::LockedAxes::new().lock_rotation_x().lock_rotation_z(),
+            avian::LinearDamping(0.5),
+            avian::AngularDamping(1.0),
         ))
         .with_children(|parent| {
             // === AURA VISUAL EFFECT ===
@@ -787,6 +851,8 @@ pub fn spawn_unit_from_template(
                 selection_priority: 1,
                 selection_radius: 1.5,
             },
+        ))
+        .insert((
             MovementTarget::new(position.x, position.z, position.z, template.base_speed),
             MovementPath {
                 waypoints: Vec::new(),
@@ -812,6 +878,43 @@ pub fn spawn_unit_from_template(
                 sight_range: 30.0,
                 faction: get_faction(team_id),
             },
+        ))
+        .insert((
+            // === PHYSICS COMPONENTS ===
+            MovementController {
+                target_position: None,
+                velocity: Vec3::ZERO,
+                max_speed: template.base_speed,
+                acceleration: 10.0,
+                rotation_speed: 5.0,
+                path_index: 0,
+                waypoints: Vec::new(),
+                is_moving: false,
+                movement_type: game_physics::MovementType::Ground,
+            },
+            Velocity::default(),
+            AABB::from_size(Vec3::new(1.0, 2.0, 1.0)),
+            Mass::new(1.0),
+            Friction::default(),
+            RigidBodyType {
+                body_type: RigidBodyVariant::Dynamic,
+            },
+            CollisionMask {
+                layer: 1,
+                mask: u32::MAX,
+            },
+            SpatialData::new(position),
+        ))
+        .insert((
+            // === AVIAN3D PHYSICS COMPONENTS ===
+            avian::RigidBody::Dynamic,
+            avian::Collider::capsule(0.5, 1.5),
+            avian::CollisionLayers::new([0], [0, 1]),
+            avian::Friction::new(0.4),
+            avian::Restitution::new(0.1),
+            avian::LockedAxes::new().lock_rotation_x().lock_rotation_z(),
+            avian::LinearDamping(0.5),
+            avian::AngularDamping(1.0),
         ))
         .with_children(|parent| {
             // Add visual children (health bar, selection indicator, etc.)

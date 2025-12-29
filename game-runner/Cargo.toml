@@ -11,6 +11,8 @@ game-world = { path = "../game-world" }
 game-units = { path = "../game-units" }
 game-combat = { path = "../game-combat" }
 game-ai = { path = "../game-ai" }
+avian3d = { workspace = true }
+game-audio = { path = "../game-audio" }
 game-ui = { path = "../game-ui" }
 
 # Additional dependencies for examples
@@ -27,3 +29,7 @@ path = "examples/unit_spawning.rs"
 [[example]]
 name = "formations"
 path = "examples/formations.rs"
+
+[[example]]
+name = "collision_avoidance_test"
+path = "examples/collision_avoidance_test.rs"

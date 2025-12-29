@@ -1,6 +1,7 @@
 //! Production fog of war system for Cosmic Dominion
 
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Component marking an entity as having fog of war applied
@@ -22,7 +23,7 @@ impl Default for FogOfWar {
 }
 
 /// State of visibility for a tile
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub enum VisibilityState {
     Hidden,   // Never seen
     Revealed, // Seen before but not currently visible
@@ -30,7 +31,7 @@ pub enum VisibilityState {
 }
 
 /// Resource storing the visibility map for the entire game world
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Serialize, Deserialize, Clone, Debug)]
 pub struct VisibilityMap {
     pub tiles: HashMap<(i32, i32), VisibilityState>,
     pub sight_blockers: HashMap<(i32, i32), bool>,
@@ -44,7 +45,7 @@ pub struct VisionProvider {
 }
 
 /// Faction identifier for vision sharing
-#[derive(Component, Clone, Copy, Debug, PartialEq)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Faction {
     Player,
     Enemy,
