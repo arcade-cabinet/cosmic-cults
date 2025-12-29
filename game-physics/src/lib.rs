@@ -80,6 +80,7 @@ impl Plugin for GamePhysicsPlugin {
                     movement::simple_movement_system,
                     movement::pathfinding_movement_system,
                     movement::waypoint_movement_system,
+                    movement::movement_rotation_system,
                 ),
             );
         }
