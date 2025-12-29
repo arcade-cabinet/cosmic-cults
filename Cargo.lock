@@ -2764,6 +2764,7 @@ dependencies = [
 name = "game-runner"
 version = "0.1.0"
 dependencies = [
+ "avian3d",
  "bevy",
  "game-ai",
  "game-assets",
@@ -2790,6 +2791,7 @@ name = "game-units"
 version = "0.1.0"
 dependencies = [
  "ahash",
+ "avian3d",
  "bevy",
  "game-assets",
  "game-physics",
