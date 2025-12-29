@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use game_ai::GameAIPlugin;
+use game_audio::GameAudioPlugin;
 use game_combat::GameCombatPlugin;
 use game_physics::GamePhysicsPlugin;
 use game_ui::GameUIPlugin;
@@ -14,6 +15,7 @@ fn main() {
         .add_plugins(GameUnitsPlugin)
         .add_plugins(GameCombatPlugin)
         .add_plugins(GameAIPlugin)
+        .add_plugins(GameAudioPlugin)
         .add_plugins(GameUIPlugin)
         .run();
 }
