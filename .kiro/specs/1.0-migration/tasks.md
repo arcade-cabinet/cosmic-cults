@@ -10,7 +10,7 @@ This document tracks all tasks for the Rust/Bevy to React Native/BabylonJS migra
 
 | # | Task | Status | Validates |
 |---|------|--------|-----------|
-| 01 | [BabylonJS Migration Foundation](tasks/01-babylon-migration.md) | 🔴 Not Started | Req 1 |
+| 01 | [BabylonJS Migration Foundation](tasks/01-babylon-migration.md) | 🟢 Complete | Req 1 |
 | 02 | [Hex Grid Diorama System](tasks/02-hex-grid-diorama.md) | 🔴 Not Started | Req 2 |
 | 03 | [Navigation and AI System](tasks/03-navigation-ai.md) | 🔴 Not Started | Req 3 |
 | 04 | [Cult Faction System](tasks/04-cult-factions.md) | 🔴 Not Started | Req 4 |
@@ -58,11 +58,11 @@ Phase 4: Polish
 
 | Phase | Tasks | Complete | Progress |
 |-------|-------|----------|----------|
-| 1: Foundation | 3 | 0 | 0% |
+| 1: Foundation | 3 | 1 | 33% |
 | 2: Core Systems | 3 | 0 | 0% |
 | 3: Features | 3 | 0 | 0% |
 | 4: Polish | 3 | 0 | 0% |
-| **Total** | **12** | **0** | **0%** |
+| **Total** | **12** | **1** | **8%** |
 
 ## Quick Start
 
