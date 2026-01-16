@@ -21,13 +21,13 @@ inputs:
     required: false
     default: 'HEAD'
   ollama_api_key:
-    description: 'Ollama API key (deprecated, use GH_TOKEN)'
+    description: 'Ollama/OpenAI-compatible API key for self-hosted models'
     required: false
   ollama_host:
-    description: 'Ollama host (deprecated)'
+    description: 'Ollama/OpenAI-compatible API host URL'
     required: false
   ollama_model:
-    description: 'Ollama model (deprecated, use model)'
+    description: '(Deprecated) Use "model" input instead'
     required: false
   jules_api_key:
     description: 'Google Jules API key'
@@ -139,11 +139,17 @@ runs:
         elif [ -n "$JULES_API_KEY" ]; then
           echo "Using Google API (Jules key)"
           # Fallback to agentic-control with Google
-          npm install -g agentic-control@1.1.0 @ai-sdk/google 2>/dev/null || true
+          npm install -g agentic-control@1.1.0 @ai-sdk/google 2>/dev/null || {
+            echo "::warning::Failed to install agentic-control"
+          }
           echo '{"triage": {"provider": "google"}}' > agentic.config.json
           export GOOGLE_API_KEY="$JULES_API_KEY"
-          
-          REVIEW_OUTPUT=$(agentic triage review --model gemini-1.5-pro 2>&1) || true
+
+          # Use model input with default fallback
+          GOOGLE_MODEL="${INPUT_MODEL:-gemini-1.5-pro}"
+          REVIEW_OUTPUT=$(agentic triage review --model "$GOOGLE_MODEL" 2>&1) || {
+            echo "::warning::agentic triage review failed"
+          }
           echo "$REVIEW_OUTPUT"
           
           SUGGESTION_COUNT=$(echo "$REVIEW_OUTPUT" | grep -c -E '🔴|🟠|🟡|⚪' || echo "0")

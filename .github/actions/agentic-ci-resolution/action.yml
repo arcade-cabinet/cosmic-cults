@@ -20,17 +20,10 @@ inputs:
     required: false
     default: '5'
   jules_api_key:
-    description: 'Jules API key'
+    description: 'Jules API key for Google AI'
     required: false
-  workflow_run_id:
-    description: 'Workflow run ID'
-    required: false
-  branch:
-    description: 'Branch name'
-    required: false
-  repository:
-    description: 'Repository name'
-    required: false
+  # Note: workflow_run_id, branch, and repository inputs were removed
+  # as they were not used. Use 'repo' input instead of 'repository'.
 
 runs:
   using: 'composite'

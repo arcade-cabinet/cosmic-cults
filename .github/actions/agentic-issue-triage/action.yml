@@ -13,11 +13,11 @@ inputs:
     description: 'The number of the issue to triage.'
     required: true
   model:
-    description: 'The Ollama model to use for the triage.'
+    description: '(Reserved) AI model for future triage features. Currently unused.'
     required: false
     default: 'llama3'
   api_key:
-    description: 'The API key for the model.'
+    description: '(Reserved) API key for future AI features. Currently unused.'
     required: false
   jules_api_key:
     description: 'Jules API key'
@@ -37,11 +37,14 @@ inputs:
 
 outputs:
   triage_summary:
-    description: 'A summary of the triage.'
+    description: '(Reserved) Summary of triage analysis. Currently not implemented.'
+    value: ${{ steps.triage.outputs.triage_summary }}
   labels:
-    description: 'The labels suggested by the agent.'
+    description: '(Reserved) Labels suggested by agent. Currently not implemented.'
+    value: ${{ steps.triage.outputs.labels }}
   assignee:
-    description: 'The assignee suggested by the agent.'
+    description: '(Reserved) Assignee suggested by agent. Currently not implemented.'
+    value: ${{ steps.triage.outputs.assignee }}
 
 runs:
   using: 'composite'
@@ -52,11 +55,12 @@ runs:
         node-version: '22'
 
     - name: Run issue triage
+      id: triage
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github_token }}
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        JULES_API_KEY: ${{ inputs.jules_api_key }}
+        # Use single consistent env var name
         GOOGLE_JULES_API_KEY: ${{ inputs.jules_api_key }}
         CURSOR_API_KEY: ${{ inputs.cursor_api_key }}
         COMMENT_BODY: ${{ inputs.comment_body }}
@@ -78,6 +82,7 @@ runs:
           TASK=$(echo "$COMMENT_BODY" | sed 's|/jules[[:space:]]*||' | head -c 1000)
           [ -z "$TASK" ] && TASK="Fix issue #$ISSUE_NUMBER"
 
+          # Simplified jq: $REPOSITORY is already "owner/repo" format
           RESPONSE=$(curl -s -X POST "https://jules.googleapis.com/v1alpha/sessions" \
             -H "X-Goog-Api-Key: $GOOGLE_JULES_API_KEY" \
             -H "Content-Type: application/json" \
@@ -88,7 +93,7 @@ runs:
               '{
                 prompt: $task,
                 sourceContext: {
-                  source: ("sources/github/" + ($repo | split("/")[0]) + "/" + ($repo | split("/")[1])),
+                  source: ("sources/github/" + $repo),
                   githubRepoContext: { startingBranch: $branch }
                 },
                 automationMode: "AUTO_CREATE_PR"
