@@ -1,81 +1,25 @@
-# Rust (legacy, kept for reference)
-target
-target/
-target/*
-bin/
-bin
-**/*.rs.bk
+# Legacy
+docs/legacy/target/
+docs/legacy/dist/
 
-# Trunk/WASM build artifacts (legacy)
-dist/
-dist
-
-# Pre-commit
-.pre-commit-cache/
-
-# OS
-.DS_Store
-*.log
-Thumbs.db
-
-# Node.js
+# Node
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+npm-debug.log
+yarn-error.log
 pnpm-debug.log*
-.pnpm-store/
 
-# Build outputs
-dist/
-build/
-.cache/
-*.tsbuildinfo
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Expo / React Native
+# Expo
 .expo/
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
 web-build/
+*.jks
+*.p12
+*.keystore
+*.mobileprovision
 
-# EAS Build
-.eas/
+# Mac
+.DS_Store
 
-# Android
-apps/mobile/android/app/build/
-apps/mobile/android/.gradle/
-apps/mobile/android/local.properties
-*.apk
-*.aab
-
-# iOS
-apps/mobile/ios/Pods/
-apps/mobile/ios/build/
-*.xcworkspace
-*.xcuserdata
-*.ipa
-
-# Test coverage
-coverage/
-.nyc_output/
-
-# Temporary
-*.tmp
-*.temp
-.turbo/
+# Editor
+.vscode/
+.idea/
+*.swp
