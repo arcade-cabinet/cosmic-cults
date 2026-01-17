@@ -49,10 +49,7 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
+    - name: Run issue triage
 
     - name: Run issue triage
       id: triage
