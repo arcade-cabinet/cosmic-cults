@@ -178,10 +178,22 @@ importers:
 
   packages/assets:
     dependencies:
+      '@babylonjs/core':
+        specifier: ^8.46.2
+        version: 8.46.2
       '@cosmic-cults/types':
         specifier: workspace:*
         version: link:../types
+      react:
+        specifier: ^19.2.3
+        version: 19.2.3
+      reactylon:
+        specifier: ^3.5.2
+        version: 3.5.2(@babylonjs/core@8.46.2)(@babylonjs/gui@8.46.2(@babylonjs/core@8.46.2))(@babylonjs/react-native@1.9.0(@babylonjs/core@8.46.2)(react-native-permissions@5.4.4(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.2.8)(react@19.2.3))(react@19.2.3))(react-native@0.81.5(@babel/core@7.28.6)(@types/react@19.2.8)(react@19.2.3))(react@19.2.3))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react-reconciler@0.31.0(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     devDependencies:
+      '@types/react':
+        specifier: ^19.2.8
+        version: 19.2.8
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -218,6 +230,9 @@ importers:
       '@babylonjs/materials':
         specifier: ^8.46.2
         version: 8.46.2(@babylonjs/core@8.46.2)
+      '@cosmic-cults/assets':
+        specifier: workspace:*
+        version: link:../assets
       '@cosmic-cults/core':
         specifier: workspace:*
         version: link:../core

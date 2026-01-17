@@ -12,9 +12,13 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-     "@cosmic-cults/types": "workspace:*"
+    "@babylonjs/core": "^8.46.2",
+    "@cosmic-cults/types": "workspace:*",
+    "react": "^19.2.3",
+    "reactylon": "^3.5.2"
   },
   "devDependencies": {
+    "@types/react": "^19.2.8",
     "typescript": "^5.0.0"
   }
 }

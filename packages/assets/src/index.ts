@@ -1,21 +1,10 @@
-// Asset Registry
-export const Assets = {
-  Models: {
-    Units: {
-      Acolyte: "models/units/acolyte.glb",
-      BloodWarrior: "models/units/blood_warrior.glb",
-      DeepOne: "models/units/deep_one.glb",
-      VoidWalker: "models/units/void_walker.glb"
-    },
-    Buildings: {
-      Temple: "models/buildings/temple.glb"
-    },
-    Terrain: {
-      Obelisk: "models/terrain/obelisk.glb"
-    }
-  },
-  Textures: {},
-  Sounds: {}
-};
+// Procedural Asset Registry
+export * from './procedural/UnitMesh';
+export * from './procedural/HexMesh';
 
-export type AssetPath = string;
+// No static paths anymore - "assets" are now procedural components
+// We could export configurations or seeds here if needed
+export const AssetConfig = {
+  UnitScale: 1.0,
+  HexSize: 1.0
+};

@@ -1,5 +1,6 @@
+import { HexMesh, UnitMesh } from '@cosmic-cults/assets';
+import { Vector3 } from '@babylonjs/core';
 import React from 'react';
-import { Vector3, Color3 } from '@babylonjs/core';
 
 export const GameScene = () => {
   return (
@@ -12,9 +13,33 @@ export const GameScene = () => {
         target={Vector3.Zero()}
       />
       <hemisphericLight name="light1" direction={Vector3.Up()} />
-      <box name="box1" size={2} position={new Vector3(0, 1, 0)}>
-        <standardMaterial name="mat1" diffuseColor={Color3.Red()} />
-      </box>
+
+      {/* Procedural Diorama Display */}
+
+      {/* Center - Crimson Cultist on Mountain */}
+      <transformNode name="center_display" position={Vector3.Zero()}>
+        <HexMesh type="mountain" />
+        <transformNode name="unit_pos" position={new Vector3(0, 0.6, 0)}>
+          <UnitMesh faction="flesh-weavers" type="warrior" selected={true} />
+        </transformNode>
+      </transformNode>
+
+      {/* Left - Deep One on Water */}
+      <transformNode name="left_display" position={new Vector3(-2, 0, 0)}>
+        <HexMesh type="water" />
+        <transformNode name="unit_pos" position={new Vector3(0, 0.2, 0)}>
+           <UnitMesh faction="star-children" type="guardian" />
+        </transformNode>
+      </transformNode>
+
+      {/* Right - Void Walker on Void */}
+      <transformNode name="right_display" position={new Vector3(2, 0, 0)}>
+        <HexMesh type="void" />
+        <transformNode name="unit_pos" position={new Vector3(0, 0.2, 0)}>
+           <UnitMesh faction="void-seekers" type="walker" />
+        </transformNode>
+      </transformNode>
+
     </>
   );
 };
