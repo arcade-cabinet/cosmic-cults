@@ -1,14 +1,25 @@
-target
-target/
-target/*
-bin/
-bin
-**/*.rs.bk
+# Legacy
+docs/legacy/target/
+docs/legacy/dist/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log*
+
+# Expo
+.expo/
+web-build/
+*.jks
+*.p12
+*.keystore
+*.mobileprovision
+
+# Mac
 .DS_Store
 
-# Trunk/WASM build artifacts
-dist/
-dist
-
-# Pre-commit
-.pre-commit-cache/
+# Editor
+.vscode/
+.idea/
+*.swp

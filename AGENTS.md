@@ -1,6 +1,15 @@
-# AGENTS.md
+# AI Agent Documentation & Governance
 
-Comprehensive instructions for AI agents working with this repository.
+**CRITICAL UPDATE (Jan 2026): Migration to React Native + BabylonJS Active**
+
+The project is transitioning from Rust/Bevy to React Native with BabylonJS (Reactylon). All agents MUST follow the documentation hierarchy below and work from the new specifications.
+
+## Documentation Hierarchy (Golden Record)
+
+1. **START HERE**: [`.kiro/specs/1.0-migration/tasks.md`](.kiro/specs/1.0-migration/tasks.md) - Current task priorities
+2. **REQUIREMENTS**: [`.kiro/specs/1.0-migration/requirements.md`](.kiro/specs/1.0-migration/requirements.md) - Acceptance criteria
+3. **DESIGN**: [`.kiro/specs/1.0-migration/design.md`](.kiro/specs/1.0-migration/design.md) - Architecture decisions
+4. **TECH STACK**: [`.kiro/steering/tech.md`](.kiro/steering/tech.md) - Commands and patterns
 
 ## Agent Types
 
@@ -9,56 +18,65 @@ Comprehensive instructions for AI agents working with this repository.
 | **Claude** | Complex reasoning, architecture, cross-repo work | `CLAUDE.md` |
 | **Copilot** | Issue kickoffs, targeted fixes, code generation | `.github/copilot-instructions.md` |
 | **Cursor** | IDE-integrated development | `.cursor/rules/*.mdc` |
+| **Kiro** | Autonomous spec execution | `.kiro/` directory |
+
+## Current Technology Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Framework** | React Native + Expo SDK 54 |
+| **3D Engine** | BabylonJS + Reactylon |
+| **State** | Miniplex ECS + Zustand |
+| **AI/Navigation** | Navigation Plugin V2 (RecastJS) |
+| **Build** | Vite + EAS Build |
+| **Testing** | Vitest + Maestro |
 
 ## Before Starting Any Task
 
-### 1. Check Context
+### 1. Check Migration Status
 ```bash
-# Current focus and recent decisions
-cat memory-bank/activeContext.md
+# Current spec and task status
+cat .kiro/specs/1.0-migration/tasks.md
 
-# Session progress
-cat memory-bank/progress.md
+# Active context
+cat memory-bank/activeContext.md 2>/dev/null || echo "No active context"
 ```
 
-### 2. Understand the Request
-- Read the issue/PR description completely
-- Check for linked issues or PRs
-- Look for acceptance criteria
+### 2. Understand Dependencies
+- Check task dependency graph in `tasks.md`
+- Ensure prerequisite tasks are complete
+- Don't skip foundational work
 
-### 3. Check Existing Patterns
+### 3. Verify Environment
 ```bash
-# Recent commits show coding patterns
-git log --oneline -10
+# Node and pnpm versions
+node --version  # Should be 22+
+pnpm --version  # Should be 10+
 
-# Similar files show conventions
-find . -name "*.py" | head -5 | xargs head -50
+# Install dependencies
+pnpm install
 ```
 
 ## Development Commands
 
-<!-- These will be overridden by language-specific instructions -->
-
 ### Testing
 ```bash
-# Run tests (check package.json or pyproject.toml for exact command)
-npm test        # Node.js
-uv run pytest   # Python
-go test ./...   # Go
+pnpm test           # Run all tests
+pnpm test:coverage  # Run with coverage
 ```
 
 ### Linting
 ```bash
-npm run lint    # Node.js
-uvx ruff check  # Python
-golangci-lint run  # Go
+pnpm lint           # Run Biome linter
+pnpm format         # Auto-fix formatting
+pnpm check          # TypeScript type check
 ```
 
 ### Building
 ```bash
-npm run build   # Node.js
-uv build        # Python
-go build        # Go
+pnpm build                              # Build all
+pnpm --filter @cosmic-cults/mobile dev  # Mobile dev server
+pnpm --filter @cosmic-cults/web dev     # Web dev server
 ```
 
 ## Commit Message Format
@@ -69,57 +87,51 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 <type>(<scope>): <description>
 
 [optional body]
-
-[optional footer]
 ```
 
 ### Types
-- `feat`: New feature (minor version bump)
-- `fix`: Bug fix (patch version bump)
+- `feat`: New feature
+- `fix`: Bug fix
 - `docs`: Documentation only
-- `style`: Formatting, no code change
-- `refactor`: Code restructure, no behavior change
-- `test`: Adding/updating tests
-- `chore`: Maintenance tasks
+- `style`: Formatting
+- `refactor`: Code restructure
+- `test`: Adding tests
+- `chore`: Maintenance
 
 ### Examples
 ```bash
-feat(auth): add OAuth2 support
-fix(api): handle null response correctly
-docs: update installation instructions
-test(utils): add edge case coverage
-chore(deps): update dependencies
+feat(babylon): add isometric camera component
+fix(ecs): correct entity disposal order
+docs: update migration progress in tasks.md
+test(hex-grid): add property tests for coordinate conversion
 ```
 
 ## Error Recovery
 
-### Tests Failing
-1. Read the error message carefully
-2. Check if it's a flaky test (run again)
-3. Check recent commits that might have caused it
-4. Fix the root cause, not just the symptom
-
-### Lint Errors
-1. Run auto-fix first (`--fix` flag)
-2. Manually fix remaining issues
-3. Don't disable rules without justification
-
 ### Build Errors
-1. Check for type errors first
-2. Ensure dependencies are installed
-3. Check for missing files or imports
+1. Check TypeScript types: `pnpm check`
+2. Check imports are correct for BabylonJS
+3. Verify Reactylon component structure
+
+### Test Failures
+1. Check if test mocks are setup correctly
+2. Verify ECS world initialization
+3. Check for async timing issues
+
+### Mobile Issues
+1. Clear Metro bundler cache: `pnpm --filter @cosmic-cults/mobile clean`
+2. Rebuild native code: `npx expo run:android`
+3. Check Expo SDK compatibility
 
 ## Memory Bank Protocol
 
 ### Reading Context
 ```bash
-# Always check before starting
 cat memory-bank/activeContext.md
 ```
 
 ### Updating Context
 ```bash
-# After completing significant work
 cat >> memory-bank/activeContext.md << 'EOF'
 
 ## Session: $(date +%Y-%m-%d)
@@ -132,15 +144,33 @@ cat >> memory-bank/activeContext.md << 'EOF'
 EOF
 ```
 
-## What NOT To Do
+## Critical Rules
 
-- ❌ Don't make unrelated changes
-- ❌ Don't skip tests
-- ❌ Don't ignore linting errors
-- ❌ Don't commit without meaningful message
-- ❌ Don't push directly to main (use PRs)
-- ❌ Don't add dependencies without justification
+- Do NOT work on Rust/Bevy code - it's being deprecated
+- Do follow the task dependency graph strictly
+- Do write property-based tests for game logic
+- Do verify 60 FPS on mobile after each major feature
+- Do NOT skip to later tasks before foundations complete
+- Do update task checkboxes as you complete work
 
-## Repository-Specific Instructions
+## Legacy Reference
 
-<!-- Add repository-specific agent instructions below -->
+The original Rust/Bevy code remains in the repository for reference during migration. Key design documents:
+- `docs/pathfinding.md` - Original pathfinding design
+- `docs/SAVE_LOAD.md` - Save system design
+- `game-ai/README.md` - AI system concepts
+
+These should inform the React Native implementation but not constrain it.
+
+## Repository-Specific Notes
+
+### Arcade Cabinet Ecosystem
+This project is part of the arcade-cabinet organization. Related projects:
+- `wheres-ball-though` - Reference for React Native + Expo patterns
+- `neo-tokyo-rival-academies` - Reference for BabylonJS + Reactylon patterns
+
+### Meshy AI Assets
+Use Meshy AI for procedural 3D asset generation:
+- Consistent prompts for Lovecraftian aesthetic
+- GLB export with embedded textures
+- Post-process in Blender for rigging if needed

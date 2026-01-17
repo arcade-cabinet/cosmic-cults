@@ -1,0 +1,53 @@
+{
+  "name": "@cosmic-cults/game",
+  "version": "0.1.0",
+  "description": "BabylonJS game engine for Cosmic Cults",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./ecs": {
+      "types": "./src/ecs/index.ts",
+      "import": "./src/ecs/index.ts"
+    },
+    "./camera": {
+      "types": "./src/camera/index.ts",
+      "import": "./src/camera/index.ts"
+    },
+    "./materials": {
+      "types": "./src/materials/index.ts",
+      "import": "./src/materials/index.ts"
+    }
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@cosmic-cults/core": "workspace:*",
+    "@cosmic-cults/types": "workspace:*",
+    "@babylonjs/core": "^8.46.2",
+    "@babylonjs/gui": "^8.46.2",
+    "@babylonjs/loaders": "^8.46.2",
+    "@babylonjs/materials": "^8.46.2",
+    "miniplex": "^2.0.0",
+    "miniplex-react": "^2.0.1",
+    "react": "^19.2.3",
+    "reactylon": "^3.5.2",
+    "zustand": "^5.0.10"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.8",
+    "fast-check": "^4.5.3",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  }
+}

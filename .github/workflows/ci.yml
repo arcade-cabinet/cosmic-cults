@@ -1,64 +1,35 @@
 name: CI
-permissions:
-  contents: read
 
 on:
   push:
-    branches: [main]
+    branches: [main, release/*]
   pull_request:
-    branches: [main]
-
-env:
-  CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
+    branches: [main, release/*]
 
 jobs:
-  # Consolidated job using matrix for DRY principle
-  ci:
-    name: ${{ matrix.job.name }}
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        job:
-          - name: Format
-            run: cargo fmt --all -- --check
-            components: rustfmt
-            cache: false
-          - name: Clippy
-            run: cargo clippy --all-targets --all-features -- -D warnings
-            components: clippy
-            cache: true
-          - name: Check
-            run: cargo check --all-targets --all-features
-            cache: true
-          - name: Test
-            run: cargo test --all-features
-            cache: true
-          - name: Doc
-            run: cargo doc --no-deps --all-features
-            cache: true
-            rustdocflags: -D warnings
-          - name: WASM
-            run: cargo check --target wasm32-unknown-unknown --all-features
-            cache: true
-            targets: wasm32-unknown-unknown
     steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@v4
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          toolchain: stable
-          components: ${{ matrix.job.components || '' }}
-          targets: ${{ matrix.job.targets || '' }}
+          node-version: 22
 
-      - name: Cache
-        if: matrix.job.cache
-        uses: Swatinem/rust-cache@401aff9a7a08acb9d27b64936a90db81024cff97 # v2.8.2
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-      - name: ${{ matrix.job.name }}
-        run: ${{ matrix.job.run }}
-        env:
-          RUSTDOCFLAGS: ${{ matrix.job.rustdocflags || '' }}
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
