@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import type { Camera } from '@babylonjs/core';
 import { EngineView, useEngine } from '@babylonjs/react-native';
-import { Camera } from '@babylonjs/core';
+import type React from 'react';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Scene } from 'reactylon';
 
 export const BabylonCanvas = ({ children }: { children: React.ReactNode }) => {
@@ -13,12 +14,13 @@ export const BabylonCanvas = ({ children }: { children: React.ReactNode }) => {
       <EngineView camera={camera} displayFrameRate={true} style={styles.view} />
       {engine && (
         <Scene
+          // @ts-ignore: Reactylon v3 Scene types don't expose engine prop explicitly but it's needed for RN integration
           engine={engine}
-          onSceneMount={(e: any) => {
-             // If the scene has a camera, set it for the view
-             if (e.scene.activeCamera) {
-               setCamera(e.scene.activeCamera);
-             }
+          onSceneMount={(e: { scene: import('@babylonjs/core').Scene }) => {
+            // If the scene has a camera, set it for the view
+            if (e.scene.activeCamera) {
+              setCamera(e.scene.activeCamera);
+            }
           }}
         >
           {children}

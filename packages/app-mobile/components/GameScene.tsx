@@ -1,6 +1,5 @@
-import { HexMesh, UnitMesh } from '@cosmic-cults/assets';
 import { Vector3 } from '@babylonjs/core';
-import React from 'react';
+import { HexMesh, UnitMesh } from '@cosmic-cults/assets';
 
 export const GameScene = () => {
   return (
@@ -28,7 +27,7 @@ export const GameScene = () => {
       <transformNode name="left_display" position={new Vector3(-2, 0, 0)}>
         <HexMesh type="water" />
         <transformNode name="unit_pos" position={new Vector3(0, 0.2, 0)}>
-           <UnitMesh faction="star-children" type="guardian" />
+          <UnitMesh faction="star-children" type="guardian" />
         </transformNode>
       </transformNode>
 
@@ -36,10 +35,9 @@ export const GameScene = () => {
       <transformNode name="right_display" position={new Vector3(2, 0, 0)}>
         <HexMesh type="void" />
         <transformNode name="unit_pos" position={new Vector3(0, 0.2, 0)}>
-           <UnitMesh faction="void-seekers" type="walker" />
+          <UnitMesh faction="void-seekers" type="walker" />
         </transformNode>
       </transformNode>
-
     </>
   );
 };
