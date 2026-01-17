@@ -10,7 +10,15 @@ export * from './camera';
 export * from './components';
 // ECS
 export * from './ecs';
+// GUI
+export * from './gui';
+// Hex Grid
+export * from './hexgrid';
 // Hooks
 export * from './hooks';
 // Materials
 export * from './materials';
+// Navigation
+export * from './navigation';
+// Procedural Generation
+export * from './procedural';

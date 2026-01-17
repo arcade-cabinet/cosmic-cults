@@ -6,10 +6,13 @@
  */
 
 import type { Mesh, Scene, TransformNode, Vector3 } from '@babylonjs/core';
+import type {
+  ICrowd,
+  INavMeshParameters,
+} from '@babylonjs/core/Navigation/INavigationEngine';
 import { RecastJSPlugin } from '@babylonjs/core/Navigation/Plugins/recastJSPlugin';
-import type { ICrowd, INavMeshParameters } from '@babylonjs/core/Navigation/INavigationEngine';
-import type { HexCoord, WorldPosition } from '@cosmic-cults/types';
 import { hexToWorld } from '@cosmic-cults/core';
+import type { HexCoord, WorldPosition } from '@cosmic-cults/types';
 
 // Navigation plugin singleton
 let navigationPlugin: RecastJSPlugin | null = null;
@@ -37,7 +40,9 @@ export const DEFAULT_NAVMESH_PARAMS: INavMeshParameters = {
 /**
  * Initialize the navigation system
  */
-export async function initializeNavigation(_scene: Scene): Promise<RecastJSPlugin> {
+export async function initializeNavigation(
+  _scene: Scene,
+): Promise<RecastJSPlugin> {
   if (navigationPlugin) {
     return navigationPlugin;
   }
@@ -65,7 +70,9 @@ export function buildNavMesh(
   params: Partial<INavMeshParameters> = {},
 ): void {
   if (!navigationPlugin) {
-    throw new Error('Navigation not initialized. Call initializeNavigation first.');
+    throw new Error(
+      'Navigation not initialized. Call initializeNavigation first.',
+    );
   }
 
   const navParams = { ...DEFAULT_NAVMESH_PARAMS, ...params };
@@ -81,7 +88,9 @@ export function createCrowd(
   maxAgentRadius: number = 0.6,
 ): ICrowd {
   if (!navigationPlugin) {
-    throw new Error('Navigation not initialized. Call initializeNavigation first.');
+    throw new Error(
+      'Navigation not initialized. Call initializeNavigation first.',
+    );
   }
 
   crowd = navigationPlugin.createCrowd(maxAgents, maxAgentRadius, scene);
@@ -117,7 +126,11 @@ export function addAgent(
   };
 
   const agentParams = { ...defaultParams, ...parameters };
-  return crowd.addAgent(position, agentParams, null as unknown as TransformNode);
+  return crowd.addAgent(
+    position,
+    agentParams,
+    null as unknown as TransformNode,
+  );
 }
 
 /**
@@ -151,9 +164,11 @@ export function setAgentDestinationHex(
   if (!crowd || !navigationPlugin) return;
 
   const worldPos = hexToWorld(hexDest);
-  const closest = navigationPlugin.getClosestPoint(
-    { x: worldPos.x, y: 0.1, z: worldPos.z } as Vector3,
-  );
+  const closest = navigationPlugin.getClosestPoint({
+    x: worldPos.x,
+    y: 0.1,
+    z: worldPos.z,
+  } as Vector3);
   crowd.agentGoto(agentIndex, closest);
 }
 
@@ -233,9 +248,11 @@ export function findPathHex(
 export function isWalkable(position: WorldPosition): boolean {
   if (!navigationPlugin) return false;
 
-  const closest = navigationPlugin.getClosestPoint(
-    { x: position.x, y: position.y, z: position.z } as Vector3,
-  );
+  const closest = navigationPlugin.getClosestPoint({
+    x: position.x,
+    y: position.y,
+    z: position.z,
+  } as Vector3);
 
   // If closest point is far from original, position is not walkable
   const dx = closest.x - position.x;

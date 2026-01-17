@@ -309,7 +309,8 @@ export function showUnitInfo(
   healthFill.width = `${healthPercent}%`;
   healthFill.height = '100%';
   healthFill.thickness = 0;
-  healthFill.background = healthPercent > 50 ? '#4ade80' : healthPercent > 25 ? '#fbbf24' : '#ef4444';
+  healthFill.background =
+    healthPercent > 50 ? '#4ade80' : healthPercent > 25 ? '#fbbf24' : '#ef4444';
   healthFill.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
   healthContainer.addControl(healthFill);
 

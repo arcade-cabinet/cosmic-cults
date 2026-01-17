@@ -59,10 +59,7 @@ interface UnitMeshConfig {
 /**
  * Generate a procedural unit mesh
  */
-export function generateUnitMesh(
-  config: UnitMeshConfig,
-  scene: Scene,
-): Mesh {
+export function generateUnitMesh(config: UnitMeshConfig, scene: Scene): Mesh {
   const rng = new SeededRandom(config.seed);
   const factionColor = Color3.FromHexString(FACTION_COLORS[config.faction]);
 
@@ -87,7 +84,10 @@ export function generateUnitMesh(
   }
 
   // Apply faction material
-  const material = new CellMaterial(`unit-${config.faction}-${config.seed}`, scene);
+  const material = new CellMaterial(
+    `unit-${config.faction}-${config.seed}`,
+    scene,
+  );
   material.diffuseColor = factionColor;
   material.computeHighLevel = true;
   mesh.material = material;
@@ -125,7 +125,14 @@ function generateCultistMesh(rng: SeededRandom, scene: Scene): Mesh {
   head.parent = body;
 
   // Merge meshes
-  const merged = Mesh.MergeMeshes([body, head], true, true, undefined, false, true);
+  const merged = Mesh.MergeMeshes(
+    [body, head],
+    true,
+    true,
+    undefined,
+    false,
+    true,
+  );
   if (!merged) throw new Error('Failed to merge cultist mesh');
 
   merged.name = 'cultist';
@@ -311,16 +318,8 @@ function generateAvatarMesh(rng: SeededRandom, scene: Scene): Mesh {
       scene,
     );
 
-    tentacle.position.set(
-      Math.cos(angle) * 0.4,
-      0.3,
-      Math.sin(angle) * 0.4,
-    );
-    tentacle.rotation.set(
-      Math.cos(angle) * 0.8,
-      0,
-      -Math.sin(angle) * 0.8,
-    );
+    tentacle.position.set(Math.cos(angle) * 0.4, 0.3, Math.sin(angle) * 0.4);
+    tentacle.rotation.set(Math.cos(angle) * 0.8, 0, -Math.sin(angle) * 0.8);
     tentacle.parent = body;
     tentacles.push(tentacle);
   }
@@ -351,7 +350,14 @@ function generateAvatarMesh(rng: SeededRandom, scene: Scene): Mesh {
   halo.parent = body;
 
   const allMeshes = [body, eye, halo, ...tentacles];
-  const merged = Mesh.MergeMeshes(allMeshes, true, true, undefined, false, true);
+  const merged = Mesh.MergeMeshes(
+    allMeshes,
+    true,
+    true,
+    undefined,
+    false,
+    true,
+  );
   if (!merged) throw new Error('Failed to merge avatar mesh');
 
   merged.name = 'avatar';
@@ -510,7 +516,7 @@ export function generateTerrainFeature(
       mesh.rotation.z = rng.range(-0.2, 0.2);
       break;
 
-    case 'altar':
+    case 'altar': {
       const base = MeshBuilder.CreateBox(
         'altar-base',
         {
@@ -534,9 +540,21 @@ export function generateTerrainFeature(
       top.position.y = 0.25;
       top.parent = base;
 
-      mesh = Mesh.MergeMeshes([base, top], true, true, undefined, false, true)!;
+      const merged = Mesh.MergeMeshes(
+        [base, top],
+        true,
+        true,
+        undefined,
+        false,
+        true,
+      );
+      if (!merged) {
+        throw new Error('Failed to merge altar mesh');
+      }
+      mesh = merged;
       mesh.name = 'altar';
       break;
+    }
 
     default:
       mesh = MeshBuilder.CreateBox('default', { size: 0.2 }, scene);
@@ -569,7 +587,7 @@ export function createSummoningEffect(
   particles.emitter = position;
 
   // Faction colors
-  const color = Color4.FromHexString(FACTION_COLORS[faction] + 'ff');
+  const color = Color4.FromHexString(`${FACTION_COLORS[faction]}ff`);
   const colorEnd = new Color4(color.r, color.g, color.b, 0);
 
   particles.color1 = color;

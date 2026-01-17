@@ -156,7 +156,6 @@ function getTerrainColor(terrain: Tile['terrain']): Color3 {
       return new Color3(0.3, 0.1, 0.2);
     case 'sanctified':
       return new Color3(0.9, 0.85, 0.7);
-    case 'neutral':
     default:
       return new Color3(0.4, 0.35, 0.3);
   }

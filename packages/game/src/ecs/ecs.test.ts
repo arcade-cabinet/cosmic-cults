@@ -9,7 +9,6 @@ import {
   aiControlled,
   createTile,
   createUnit,
-  type GameEntity,
   movingEntities,
   removeEntity,
   selectedUnits,
@@ -97,11 +96,10 @@ describe('ECS Module', () => {
           world.remove(entity);
         }
 
-        const unit = createUnit(
-          'void-seekers',
-          type as UnitType,
-          { q: 0, r: 0 },
-        );
+        const unit = createUnit('void-seekers', type as UnitType, {
+          q: 0,
+          r: 0,
+        });
 
         expect(unit.health?.max).toBe(expectedHealth);
         expect(unit.health?.current).toBe(expectedHealth);
@@ -121,11 +119,10 @@ describe('ECS Module', () => {
           world.remove(entity);
         }
 
-        const unit = createUnit(
-          'void-seekers',
-          type as UnitType,
-          { q: 0, r: 0 },
-        );
+        const unit = createUnit('void-seekers', type as UnitType, {
+          q: 0,
+          r: 0,
+        });
 
         expect(unit.movement?.speed).toBe(expectedSpeed);
       }
@@ -142,9 +139,11 @@ describe('ECS Module', () => {
       expect(ids.size).toBe(100);
     });
 
-    it('initializes unit as not selected', () => {
+    it('initializes unit as not selected (component not set)', () => {
       const unit = createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
-      expect(unit.selected).toBe(false);
+      // In Miniplex, archetypes match based on component presence.
+      // So we don't set selected: false, we just don't set it at all.
+      expect(unit.selected).toBeUndefined();
     });
 
     it('initializes unit as visible', () => {
@@ -152,9 +151,11 @@ describe('ECS Module', () => {
       expect(unit.visible).toBe(true);
     });
 
-    it('initializes unit as not AI controlled', () => {
+    it('initializes unit as not AI controlled (component not set)', () => {
       const unit = createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
-      expect(unit.aiControlled).toBe(false);
+      // In Miniplex, archetypes match based on component presence.
+      // So we don't set aiControlled: false, we just don't set it at all.
+      expect(unit.aiControlled).toBeUndefined();
     });
   });
 
@@ -230,23 +231,28 @@ describe('ECS Module', () => {
     });
 
     it('selectedUnits archetype queries selected units', () => {
-      const unit1 = createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
-      const unit2 = createUnit('flesh-weavers', 'priest', { q: 1, r: 0 });
+      // Create units without the selected component
+      createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
+      createUnit('flesh-weavers', 'priest', { q: 1, r: 0 });
 
-      // Select only one unit
-      unit1.selected = true;
+      // Initially no units are selected (selected component not set)
+      expect([...selectedUnits].length).toBe(0);
+
+      // Create a unit directly with the selected component set
+      const selectedUnit = world.add({
+        id: crypto.randomUUID(),
+        transform: { position: { x: 0, y: 0, z: 0 }, rotation: 0, scale: 1 },
+        unit: { faction: 'void-seekers', type: 'cultist' },
+        selected: true,
+      });
 
       expect([...selectedUnits].length).toBe(1);
-      expect([...selectedUnits][0]?.id).toBe(unit1.id);
-
-      // Also select second unit
-      unit2.selected = true;
-
-      expect([...selectedUnits].length).toBe(2);
+      expect([...selectedUnits][0]?.id).toBe(selectedUnit.id);
     });
 
     it('aiControlled archetype queries AI units', () => {
-      const unit1 = createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
+      // Create a non-AI unit (not used directly, but needed for the test)
+      createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
       const unit2 = createUnit('flesh-weavers', 'priest', { q: 1, r: 0 });
 
       unit2.aiControlled = true;
@@ -256,7 +262,8 @@ describe('ECS Module', () => {
     });
 
     it('movingEntities archetype queries moving entities', () => {
-      const unit = createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
+      // Create a unit (not used directly, but creates an entity in movingEntities)
+      createUnit('void-seekers', 'cultist', { q: 0, r: 0 });
 
       // Initially the unit is in movingEntities (has transform and movement)
       expect([...movingEntities].length).toBe(1);

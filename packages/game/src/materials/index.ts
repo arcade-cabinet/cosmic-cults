@@ -77,7 +77,6 @@ export function getTerrainMaterial(
       material.diffuseColor = new Color3(0.9, 0.85, 0.7);
       material.emissiveColor = new Color3(0.1, 0.08, 0.05);
       break;
-    case 'neutral':
     default:
       material.diffuseColor = new Color3(0.4, 0.35, 0.3);
       break;

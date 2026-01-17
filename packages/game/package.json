@@ -58,14 +58,14 @@
     "miniplex-react": "^2.0.1",
     "react": "^19.2.3",
     "reactylon": "^3.5.2",
-    "recast-navigation": "^0.39.0",
+    "recast-navigation": "^0.43.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@types/react": "^19.2.8",
     "fast-check": "^4.5.3",
     "typescript": "~5.9.3",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

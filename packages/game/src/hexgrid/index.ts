@@ -7,19 +7,19 @@
 
 import {
   Color3,
-  type Mesh,
-  type Scene,
   Matrix,
+  type Mesh,
   MeshBuilder,
+  type Scene,
   VertexBuffer,
 } from '@babylonjs/core';
 import { CellMaterial } from '@babylonjs/materials';
+import { HEX_SIZE, hexesInRange, hexToWorld } from '@cosmic-cults/core';
 import type { HexCoord, TerrainType, Visibility } from '@cosmic-cults/types';
-import { hexesInRange, hexToWorld, HEX_SIZE } from '@cosmic-cults/core';
 
 // Hex mesh template cache
 let hexMeshTemplate: Mesh | null = null;
-let terrainMaterials: Map<TerrainType, CellMaterial> = new Map();
+const terrainMaterials: Map<TerrainType, CellMaterial> = new Map();
 let fogMesh: Mesh | null = null;
 
 // Tile data for rendering
@@ -41,7 +41,7 @@ export interface HexChunk {
 }
 
 // Grid state
-let chunks: Map<string, HexChunk> = new Map();
+const chunks: Map<string, HexChunk> = new Map();
 let activeScene: Scene | null = null;
 
 /**
@@ -81,12 +81,13 @@ function createHexMeshTemplate(scene: Scene): void {
  * Create cel-shaded terrain materials
  */
 function createTerrainMaterials(scene: Scene): void {
-  const terrainColors: Record<TerrainType, { base: string; emissive: string }> = {
-    void: { base: '#1a0a2e', emissive: '#0d0019' },
-    corrupted: { base: '#4d1a33', emissive: '#1a000d' },
-    sanctified: { base: '#e6d9b3', emissive: '#1a1408' },
-    neutral: { base: '#665c4d', emissive: '#000000' },
-  };
+  const terrainColors: Record<TerrainType, { base: string; emissive: string }> =
+    {
+      void: { base: '#1a0a2e', emissive: '#0d0019' },
+      corrupted: { base: '#4d1a33', emissive: '#1a000d' },
+      sanctified: { base: '#e6d9b3', emissive: '#1a1408' },
+      neutral: { base: '#665c4d', emissive: '#000000' },
+    };
 
   for (const [terrain, colors] of Object.entries(terrainColors)) {
     const material = new CellMaterial(`terrain-${terrain}`, scene);
@@ -143,11 +144,9 @@ export function createChunk(
   const chunkKey = getChunkKey(center);
 
   // Return existing chunk if already loaded
-  if (chunks.has(chunkKey)) {
-    const existing = chunks.get(chunkKey)!;
-    if (existing.loaded) {
-      return existing;
-    }
+  const existing = chunks.get(chunkKey);
+  if (existing?.loaded) {
+    return existing;
   }
 
   // Group tiles by terrain type for efficient batching
@@ -156,7 +155,7 @@ export function createChunk(
     if (!tilesByTerrain.has(tile.terrain)) {
       tilesByTerrain.set(tile.terrain, []);
     }
-    tilesByTerrain.get(tile.terrain)!.push(tile);
+    tilesByTerrain.get(tile.terrain)?.push(tile);
   }
 
   // Create mesh for each terrain type using thin instances
@@ -201,7 +200,9 @@ export function createChunk(
   }
 
   // Create fog instances for hidden/revealed tiles
-  const fogTiles = tiles.filter((t) => t.visibility === 'hidden' || t.visibility === 'revealed');
+  const fogTiles = tiles.filter(
+    (t) => t.visibility === 'hidden' || t.visibility === 'revealed',
+  );
   let fogChunkMesh: Mesh | null = null;
 
   if (fogTiles.length > 0 && fogMesh) {
@@ -421,16 +422,13 @@ export function getChunkStats(): {
 /**
  * Create a hex grid visualization for debugging
  */
-export function createDebugGrid(
-  scene: Scene,
-  radius: number = 5,
-): Mesh {
+export function createDebugGrid(scene: Scene, radius: number = 5): Mesh {
   if (!hexMeshTemplate) {
     createHexMeshTemplate(scene);
   }
 
   const hexes = hexesInRange({ q: 0, r: 0 }, radius);
-  const debugMesh = hexMeshTemplate!.clone('debugGrid');
+  const debugMesh = hexMeshTemplate?.clone('debugGrid');
 
   if (!debugMesh) {
     throw new Error('Failed to create debug grid');

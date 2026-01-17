@@ -66,8 +66,8 @@ describe('Procedural Generation', () => {
       fc.assert(
         fc.property(
           fc.integer({ min: 1, max: 1000000 }),
-          fc.float({ min: -100, max: 0 }),
-          fc.float({ min: 0, max: 100 }),
+          fc.float({ min: -100, max: 0, noNaN: true }),
+          fc.float({ min: 1, max: 100, noNaN: true }),
           (seed, min, max) => {
             const rng = new SeededRandom(seed);
 
@@ -110,9 +110,7 @@ describe('Procedural Generation', () => {
       }
 
       // Check that not all sequences are the same
-      const uniqueSequences = new Set(
-        sequences.map((seq) => seq.join(',')),
-      );
+      const uniqueSequences = new Set(sequences.map((seq) => seq.join(',')));
 
       expect(uniqueSequences.size).toBe(10);
     });
@@ -125,7 +123,8 @@ describe('Procedural Generation', () => {
       for (let i = 0; i < samples; i++) {
         const value = rng.next();
         const bucket = Math.min(Math.floor(value * 10), 9);
-        buckets[bucket]++;
+        const current = buckets[bucket] ?? 0;
+        buckets[bucket] = current + 1;
       }
 
       // Each bucket should have roughly samples/10 values
@@ -150,9 +149,9 @@ describe('Procedural Generation', () => {
 
     it('unit health values are properly scaled', () => {
       // Cultist < Acolyte < Priest < Avatar
-      expect(healthMap.cultist).toBeLessThan(healthMap.acolyte!);
-      expect(healthMap.acolyte).toBeLessThan(healthMap.priest!);
-      expect(healthMap.priest).toBeLessThan(healthMap.avatar!);
+      expect(healthMap.cultist).toBeLessThan(healthMap.acolyte ?? 0);
+      expect(healthMap.acolyte).toBeLessThan(healthMap.priest ?? 0);
+      expect(healthMap.priest).toBeLessThan(healthMap.avatar ?? 0);
     });
 
     // Test the expected speed values for unit types
@@ -165,9 +164,9 @@ describe('Procedural Generation', () => {
 
     it('unit speed values are inversely proportional to power', () => {
       // Cultist > Acolyte > Priest > Avatar (speed)
-      expect(speedMap.cultist).toBeGreaterThan(speedMap.acolyte!);
-      expect(speedMap.acolyte).toBeGreaterThan(speedMap.priest!);
-      expect(speedMap.priest).toBeGreaterThan(speedMap.avatar!);
+      expect(speedMap.cultist).toBeGreaterThan(speedMap.acolyte ?? 0);
+      expect(speedMap.acolyte).toBeGreaterThan(speedMap.priest ?? 0);
+      expect(speedMap.priest).toBeGreaterThan(speedMap.avatar ?? 0);
     });
   });
 
@@ -235,8 +234,8 @@ describe('Procedural Generation', () => {
     it('noise produces values in range [0, 1]', () => {
       fc.assert(
         fc.property(
-          fc.float({ min: -100, max: 100 }),
-          fc.float({ min: -100, max: 100 }),
+          fc.float({ min: -100, max: 100, noNaN: true }),
+          fc.float({ min: -100, max: 100, noNaN: true }),
           fc.integer({ min: 0, max: 10000 }),
           (x, y, seed) => {
             const value = noise(x, y, seed);
@@ -250,8 +249,8 @@ describe('Procedural Generation', () => {
     it('noise is deterministic', () => {
       fc.assert(
         fc.property(
-          fc.float({ min: -100, max: 100 }),
-          fc.float({ min: -100, max: 100 }),
+          fc.float({ min: -100, max: 100, noNaN: true }),
+          fc.float({ min: -100, max: 100, noNaN: true }),
           fc.integer({ min: 0, max: 10000 }),
           (x, y, seed) => {
             expect(noise(x, y, seed)).toBe(noise(x, y, seed));
@@ -308,7 +307,8 @@ describe('Procedural Generation', () => {
       fc.assert(
         fc.property(fc.integer({ min: 1, max: 1000000 }), (seed) => {
           const rng = new SeededRandom(seed);
-          const height = baseHeight + rng.range(-variationRange, variationRange);
+          const height =
+            baseHeight + rng.range(-variationRange, variationRange);
 
           expect(height).toBeGreaterThanOrEqual(baseHeight - variationRange);
           expect(height).toBeLessThanOrEqual(baseHeight + variationRange);

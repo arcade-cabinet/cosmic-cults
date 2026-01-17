@@ -60,6 +60,10 @@ export function createUnit(
   type: UnitType,
   _position: HexCoord,
 ): GameEntity {
+  // Note: Don't set `selected: false` or `aiControlled: false` here.
+  // In Miniplex, archetypes match based on component PRESENCE, not value.
+  // Setting `selected: false` would make the unit match the `selectedUnits` archetype.
+  // Instead, only add these components when they should be "true".
   const entity = world.add({
     id: crypto.randomUUID(),
     transform: {
@@ -78,10 +82,8 @@ export function createUnit(
       faction,
       type,
     },
-    selected: false,
     targetable: true,
     visible: true,
-    aiControlled: false,
   });
 
   return entity;
