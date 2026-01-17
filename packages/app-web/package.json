@@ -1,5 +1,5 @@
 {
-  "name": "@cosmic-cults/web",
+  "name": "@cosmic-cults/app-web",
   "version": "0.1.0",
   "private": true,
   "description": "Vite web app for Cosmic Cults development",
