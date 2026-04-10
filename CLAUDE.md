@@ -1,122 +1,82 @@
+---
+title: Claude Agent Entry Point
+updated: 2026-04-09
+status: current
+domain: technical
+---
+
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-> **See also:** `AGENTS.md` for comprehensive agent instructions.
+Cosmic Cults is a Lovecraftian 4X real-time strategy game built on React Native (Expo SDK 54) + BabylonJS. The project is mid-migration from a Rust/Bevy codebase. This file contains only project-specific instructions.
 
 ## Critical Context
 
-**MIGRATION ACTIVE**: This project is migrating from Rust/Bevy to React Native + BabylonJS (Reactylon).
+The codebase is in active migration. The TypeScript packages under `packages/` are the active target. Rust code in `docs/legacy/` is reference only — do not modify it.
 
-- **DO NOT** modify Rust code unless specifically preserving designs
-- **DO** follow the `.kiro/specs/1.0-migration/` specifications
-- **DO** reference `wheres-ball-though` and `neo-tokyo-rival-academies` for patterns
-
-## Quick Start
-
-```bash
-# Check current migration status
-cat .kiro/specs/1.0-migration/tasks.md
-
-# Check active context
-cat memory-bank/activeContext.md 2>/dev/null || echo "No active context"
-
-# Install dependencies (when project structure is set up)
-pnpm install
-```
-
-## Development Workflow
-
-### Before Making Changes
-1. Read the task from `.kiro/specs/1.0-migration/tasks/`
-2. Check `memory-bank/activeContext.md` for recent progress
-3. Ensure prerequisite tasks are complete
-4. Run tests to ensure clean starting state
-
-### Making Changes
-1. Create feature branch: `feat/<task-name>`
-2. Make focused changes following the task checklist
-3. Write/update tests for new functionality
-4. Ensure all tests pass: `pnpm test`
-5. Update task checkboxes when subtasks complete
-
-### Committing
-```bash
-# Use conventional commits
-git commit -m "feat(babylon): add isometric camera component"
-git commit -m "fix(ecs): resolve entity disposal order"
-git commit -m "docs: update task progress"
-git commit -m "test(hex-grid): add coordinate conversion tests"
-```
-
-## Code Quality Checklist
-
-Before considering work complete:
-- [ ] All task subtasks checked off
-- [ ] All tests pass (`pnpm test`)
-- [ ] Linting passes (`pnpm lint`)
-- [ ] TypeScript compiles (`pnpm check`)
-- [ ] Works on mobile (test in Expo)
-- [ ] 60 FPS maintained
-
-## Project Structure (Target)
+## Repository Layout
 
 ```
-.
-├── apps/
-│   ├── mobile/          # React Native + Expo
-│   │   ├── app/         # Expo Router screens
-│   │   └── src/
-│   │       ├── components/babylon/  # BabylonJS wrappers
-│   │       ├── systems/             # ECS systems
-│   │       └── state/               # Miniplex + Zustand
-│   └── web/             # Vite web build
+cosmic-cults/
 ├── packages/
-│   ├── game-core/       # Shared game logic
-│   └── types/           # Shared types
-├── .kiro/
-│   ├── specs/1.0-migration/  # Migration spec
-│   └── steering/             # Agent guidelines
-├── memory-bank/         # AI context files
-├── docs/                # Documentation
-├── CLAUDE.md            # This file
-└── AGENTS.md            # Agent instructions
+│   ├── types/          # @cosmic-cults/types — shared TypeScript types
+│   ├── config/         # @cosmic-cults/config — game constants
+│   ├── core/           # @cosmic-cults/core — hex grid math
+│   ├── engine/         # @cosmic-cults/engine — BabylonJS camera/materials/scene
+│   ├── ecs/            # @cosmic-cults/ecs — Miniplex ECS world and archetypes
+│   ├── game/           # @cosmic-cults/game — BabylonJS integration, hex grid rendering
+│   ├── navigation/     # @cosmic-cults/navigation — RecastJS navmesh
+│   ├── procedural/     # @cosmic-cults/procedural — terrain feature generation
+│   ├── store/          # @cosmic-cults/store — Zustand UI state
+│   ├── ui/             # @cosmic-cults/ui — HUD, dialogs, minimap, toast
+│   ├── web/            # @cosmic-cults/web — Vite dev app
+│   └── mobile/         # @cosmic-cults/mobile — Expo SDK 54 app
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── DESIGN.md
+│   ├── TESTING.md
+│   ├── STATE.md
+│   └── LORE.md
+└── memory-bank/        # AI session context (not source of truth for docs)
 ```
 
-## Getting Help
+## Development Commands
 
-1. Check `.kiro/specs/1.0-migration/tasks.md` for task details
-2. Check `.kiro/steering/tech.md` for commands
-3. Check `docs/` for design decisions
-4. Reference `wheres-ball-though` for Expo patterns
-5. Reference `neo-tokyo-rival-academies` for BabylonJS patterns
+```bash
+pnpm install            # install all workspace dependencies
+pnpm dev                # web dev server (Vite)
+pnpm dev:mobile         # Expo mobile dev server
+pnpm build              # web production build
+pnpm test               # vitest across all packages
+pnpm test:coverage      # with coverage
+pnpm lint               # Biome check
+pnpm format             # Biome fix
+pnpm check              # TypeScript across all packages
+```
 
-## Key Technologies
+## Tech Stack
 
 | Purpose | Technology |
 |---------|------------|
-| Mobile Framework | React Native + Expo SDK 54 |
-| 3D Engine | BabylonJS + Reactylon |
-| State (Game) | Miniplex ECS |
-| State (UI) | Zustand |
-| Navigation/AI | Navigation Plugin V2 |
-| Build | Vite + EAS Build |
-| Testing | Vitest + Maestro |
-| Linting | Biome |
+| Mobile app | React Native + Expo SDK 54 |
+| Web app | Vite + React 19 |
+| 3D engine | BabylonJS 8.x + Reactylon |
+| ECS | Miniplex 2.x |
+| UI state | Zustand 5.x |
+| Navigation/AI | RecastJS (via recast-navigation) |
+| Linting | Biome 2.x |
+| Testing | Vitest + fast-check (property tests) |
+| Language | TypeScript 5.9 strict |
+| Package manager | pnpm 10+ workspaces |
 
-## Repository-Specific Notes
+## Code Rules
 
-### Migration from Rust
-- Original Rust/Bevy code preserved for reference
-- Port game logic concepts, not code directly
-- ECS patterns translate well (Bevy ECS → Miniplex)
+- Max 300 LOC per file
+- TypeScript strict mode — no `any`, no type assertions without comment
+- Miniplex: component presence = truthy; never set boolean components to `false`, omit them instead
+- BabylonJS instances must be disposed in cleanup functions
+- 60 FPS target on mobile — profile before and after rendering changes
 
-### BabylonJS Integration
-- Use Reactylon for React component integration
-- Navigation Plugin V2 for pathfinding (replaces YukaJS)
-- Cel-shaded materials for Lovecraftian aesthetic
+## Reference Projects
 
-### Meshy AI Assets
-- Use consistent prompts for style cohesion
-- Export as GLB with embedded textures
-- May need Blender cleanup for rigging
+- `../wheres-ball-though` — React Native + Expo patterns
+- `../neo-tokyo-rival-academies` — BabylonJS + Reactylon patterns

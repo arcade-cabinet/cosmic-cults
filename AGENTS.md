@@ -1,176 +1,142 @@
-# AI Agent Documentation & Governance
+---
+title: Agent Protocols
+updated: 2026-04-09
+status: current
+domain: technical
+---
 
-**CRITICAL UPDATE (Jan 2026): Migration to React Native + BabylonJS Active**
+# Agent Protocols
 
-The project is transitioning from Rust/Bevy to React Native with BabylonJS (Reactylon). All agents MUST follow the documentation hierarchy below and work from the new specifications.
-
-## Documentation Hierarchy (Golden Record)
-
-1. **START HERE**: [`.kiro/specs/1.0-migration/tasks.md`](.kiro/specs/1.0-migration/tasks.md) - Current task priorities
-2. **REQUIREMENTS**: [`.kiro/specs/1.0-migration/requirements.md`](.kiro/specs/1.0-migration/requirements.md) - Acceptance criteria
-3. **DESIGN**: [`.kiro/specs/1.0-migration/design.md`](.kiro/specs/1.0-migration/design.md) - Architecture decisions
-4. **TECH STACK**: [`.kiro/steering/tech.md`](.kiro/steering/tech.md) - Commands and patterns
-
-## Agent Types
-
-| Agent | Best For | Context File |
-|-------|----------|--------------|
-| **Claude** | Complex reasoning, architecture, cross-repo work | `CLAUDE.md` |
-| **Copilot** | Issue kickoffs, targeted fixes, code generation | `.github/copilot-instructions.md` |
-| **Cursor** | IDE-integrated development | `.cursor/rules/*.mdc` |
-| **Kiro** | Autonomous spec execution | `.kiro/` directory |
-
-## Current Technology Stack
-
-| Layer | Technology |
-|-------|------------|
-| **Framework** | React Native + Expo SDK 54 |
-| **3D Engine** | BabylonJS + Reactylon |
-| **State** | Miniplex ECS + Zustand |
-| **AI/Navigation** | Navigation Plugin V2 (RecastJS) |
-| **Build** | Vite + EAS Build |
-| **Testing** | Vitest + Maestro |
+Extended operating instructions for all AI agents working on Cosmic Cults.
 
 ## Before Starting Any Task
 
-### 1. Check Migration Status
+1. Read `memory-bank/activeContext.md` for recent session state.
+2. Run `git status` and `git log --oneline -5` to understand the current branch.
+3. Check `gh pr list` for open PRs that need attention.
+4. Verify the TypeScript workspace builds: `pnpm check`.
+
+## Task Hierarchy
+
+The active migration spec lives in `.kiro/specs/1.0-migration/`. Work through tasks in order — later tasks depend on earlier foundations.
+
 ```bash
-# Current spec and task status
-cat .kiro/specs/1.0-migration/tasks.md
-
-# Active context
-cat memory-bank/activeContext.md 2>/dev/null || echo "No active context"
+cat .kiro/specs/1.0-migration/tasks.md        # current task list
+cat .kiro/specs/1.0-migration/requirements.md # acceptance criteria
+cat .kiro/specs/1.0-migration/design.md       # architecture decisions
+cat .kiro/steering/tech.md                    # commands and patterns
 ```
 
-### 2. Understand Dependencies
-- Check task dependency graph in `tasks.md`
-- Ensure prerequisite tasks are complete
-- Don't skip foundational work
+## Agent Capabilities by Type
 
-### 3. Verify Environment
-```bash
-# Node and pnpm versions
-node --version  # Should be 22+
-pnpm --version  # Should be 10+
+| Agent | Strengths | Primary Context |
+|-------|-----------|-----------------|
+| Claude | Architecture, cross-package work, complex reasoning | CLAUDE.md |
+| Copilot | Targeted fixes, code generation in IDE | `.github/copilot-instructions.md` |
+| Cursor | IDE-integrated development | `.cursor/rules/` |
+| Kiro | Autonomous spec execution | `.kiro/` |
 
-# Install dependencies
-pnpm install
+## Architecture Patterns
+
+### ECS (Miniplex)
+
+Components are properties on entities. Presence = truthy; absence = not set.
+
+```typescript
+// Correct: add by setting property
+entity.selected = true;
+
+// Correct: remove by deleting
+delete entity.selected;
+
+// Wrong: never set boolean components false
+entity.selected = false; // do NOT do this
 ```
 
-## Development Commands
+Archetypes are pre-defined queries. Add new archetypes in `packages/ecs/src/archetypes.ts`.
 
-### Testing
-```bash
-pnpm test           # Run all tests
-pnpm test:coverage  # Run with coverage
-```
+### BabylonJS Lifecycle
 
-### Linting
-```bash
-pnpm lint           # Run Biome linter
-pnpm format         # Auto-fix formatting
-pnpm check          # TypeScript type check
-```
+- Always initialize from `packages/engine/src/scene/` — never construct scenes inline.
+- Dispose resources: meshes, materials, navigation plugins must call `.dispose()`.
+- Use thin instances (`thinInstanceSetBuffer`) for tile grids, not individual meshes.
+- Cel-shading uses `CellMaterial` from `@babylonjs/materials`.
 
-### Building
-```bash
-pnpm build                              # Build all
-pnpm --filter @cosmic-cults/mobile dev  # Mobile dev server
-pnpm --filter @cosmic-cults/web dev     # Web dev server
-```
+### Hex Grid Coordinate Systems
 
-## Commit Message Format
+- Axial coordinates (`HexCoord: { q, r }`) for storage and ECS.
+- Cube coordinates (`CubeCoord: { x, y, z }`) for distance and rotation math.
+- World coordinates (`WorldPosition: { x, y, z }`) for BabylonJS.
+- Pointy-top hex orientation: `Math.PI / 6` rotation on cylinder meshes.
+- Conversion utilities in `packages/core/src/hex/`.
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+### State Management Split
 
-```
-<type>(<scope>): <description>
+- ECS world (`packages/ecs/`) owns entity state (units, tiles, combat).
+- Zustand store (`packages/store/`) owns UI state (camera target, selection, turn/phase).
+- Never duplicate state between the two systems.
 
-[optional body]
-```
+### Navigation
 
-### Types
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only
-- `style`: Formatting
-- `refactor`: Code restructure
-- `test`: Adding tests
-- `chore`: Maintenance
-
-### Examples
-```bash
-feat(babylon): add isometric camera component
-fix(ecs): correct entity disposal order
-docs: update migration progress in tasks.md
-test(hex-grid): add property tests for coordinate conversion
-```
+- RecastJS via `recast-navigation` — async `init()` before use.
+- Call `initializeNavigation(scene)` once, then reuse the singleton.
+- Build navmesh from terrain meshes after hex grid chunk creation.
 
 ## Error Recovery
 
-### Build Errors
-1. Check TypeScript types: `pnpm check`
-2. Check imports are correct for BabylonJS
-3. Verify Reactylon component structure
+### Build failures
+1. `pnpm check` — find TypeScript errors first.
+2. Check import paths use workspace aliases (`@cosmic-cults/...`), not relative paths.
+3. Verify Reactylon component structure matches BabylonJS API version.
 
-### Test Failures
-1. Check if test mocks are setup correctly
-2. Verify ECS world initialization
-3. Check for async timing issues
+### Test failures
+1. ECS world must be cleared in `beforeEach` — check test setup.
+2. BabylonJS imports need mocking in unit tests (no DOM).
+3. Use `fast-check` for property tests on game logic.
 
-### Mobile Issues
-1. Clear Metro bundler cache: `pnpm --filter @cosmic-cults/mobile clean`
-2. Rebuild native code: `npx expo run:android`
-3. Check Expo SDK compatibility
+### Mobile issues
+1. Clear Metro cache: `pnpm --filter @cosmic-cults/mobile clean`.
+2. Rebuild native: `npx expo run:android` or `npx expo run:ios`.
+3. Check `@babylonjs/react-native` version matches `@babylonjs/core`.
 
 ## Memory Bank Protocol
 
-### Reading Context
+Read context at session start:
+
 ```bash
 cat memory-bank/activeContext.md
 ```
 
-### Updating Context
+Append at session end:
+
 ```bash
 cat >> memory-bank/activeContext.md << 'EOF'
 
-## Session: $(date +%Y-%m-%d)
+## Session: YYYY-MM-DD
 
 ### Completed
-- [x] Description of completed work
+- [x] ...
 
 ### For Next Agent
-- [ ] Remaining tasks
+- [ ] ...
 EOF
+```
+
+## Commit Conventions
+
+Conventional Commits with package scope:
+
+```
+feat(engine): add cel-shaded water material
+fix(ecs): correct entity disposal order in removeEntity
+test(core): add property tests for hexLine
+docs: update STATE.md with Task 02 progress
 ```
 
 ## Critical Rules
 
-- Do NOT work on Rust/Bevy code - it's being deprecated
-- Do follow the task dependency graph strictly
-- Do write property-based tests for game logic
-- Do verify 60 FPS on mobile after each major feature
-- Do NOT skip to later tasks before foundations complete
-- Do update task checkboxes as you complete work
-
-## Legacy Reference
-
-The original Rust/Bevy code remains in the repository for reference during migration. Key design documents:
-- `docs/pathfinding.md` - Original pathfinding design
-- `docs/SAVE_LOAD.md` - Save system design
-- `game-ai/README.md` - AI system concepts
-
-These should inform the React Native implementation but not constrain it.
-
-## Repository-Specific Notes
-
-### Arcade Cabinet Ecosystem
-This project is part of the arcade-cabinet organization. Related projects:
-- `wheres-ball-though` - Reference for React Native + Expo patterns
-- `neo-tokyo-rival-academies` - Reference for BabylonJS + Reactylon patterns
-
-### Meshy AI Assets
-Use Meshy AI for procedural 3D asset generation:
-- Consistent prompts for Lovecraftian aesthetic
-- GLB export with embedded textures
-- Post-process in Blender for rigging if needed
+- Do not touch Rust code in `docs/legacy/` — reference only.
+- Follow the task dependency graph in `tasks.md` strictly.
+- Verify 60 FPS on mobile after any rendering change.
+- Update `memory-bank/activeContext.md` at the end of every session.
+- Write property-based tests (fast-check) for all pure game logic functions.
