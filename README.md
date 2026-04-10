@@ -1,140 +1,99 @@
-# Cosmic Cults (Rust)
+---
+title: Cosmic Cults
+updated: 2026-04-09
+status: current
+domain: product
+---
 
-[![CI](https://github.com/jbcom/rust-cosmic-cults/workflows/CI/badge.svg)](https://github.com/jbcom/rust-cosmic-cults/actions)
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
+# Cosmic Cults
 
-A Lovecraftian 4X real-time strategy game built with the Bevy game engine, targeting WebGL/WASM for browser-based gameplay.
+A Lovecraftian 4X real-time strategy game. Three cults compete for dominion over a corrupted hex-tile world. Built on React Native (Expo SDK 54) + BabylonJS, targeting both mobile and web.
 
-## Features
+Licensed under MIT or Apache-2.0 at your option.
 
-- 🎮 **3D RTS Mechanics**: Real-time strategy with proper 3D rendering
-- 👁️ **Cult Management**: Control one of three distinct cults
-- 🧠 **Advanced AI**: Behavior trees, utility AI, state machines
-- ⚔️ **Combat Systems**: Damage, effects, XP progression
-- 🌫️ **Fog of War**: Exploration and visibility mechanics
-- 🌐 **Web-Native**: WASM compilation for browser play
+## What It Is
 
-## Crate Structure
+- Isometric hex-grid RTS with fog of war and corruption mechanics
+- Three playable factions: Void Seekers, Flesh Weavers, Star Children
+- Procedurally generated terrain with elevation and terrain type variation
+- Cel-shaded Lovecraftian visual style
+- Shared codebase for iOS, Android, and browser play
 
-| Crate | Description | Status |
-|-------|-------------|--------|
-| `game-ai` | AI systems, behavior trees, utility AI | 🚧 Migration |
-| `game-combat` | Combat, damage, effects, XP | 🚧 Migration |
-| `game-world` | World generation, terrain, fog of war | 🚧 Migration |
-| `game-units` | Unit management, formations | 🚧 Migration |
-| `game-physics` | Physics integration with Avian3D | 🚧 Migration |
-| `game-assets` | Asset loading and management | 🚧 Migration |
-| `game-runner` | Main game runner | 🚧 Migration |
+## Project Status
 
-## Development
+The TypeScript + BabylonJS implementation is in active development. The hex grid foundation, ECS layer, isometric camera, cel-shaded materials, and RecastJS navigation are implemented. See `docs/STATE.md` for current progress.
 
-### Prerequisites
+## Prerequisites
 
-- Rust 1.85+ (Edition 2024)
-- For WASM: `wasm32-unknown-unknown` target and `trunk`
+- Node.js 22+
+- pnpm 10+ (`npm install -g pnpm`)
+- For mobile: Expo CLI (`npm install -g expo-cli`) and a physical device or simulator
+
+## Getting Started
 
 ```bash
-# Install Rust (if not already installed)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Install dependencies
+pnpm install
 
-# Add WASM target
-rustup target add wasm32-unknown-unknown
+# Run web dev server (BabylonJS, Vite)
+pnpm dev
 
-# Install trunk (for WASM development)
-cargo install trunk
+# Run mobile dev server (Expo)
+pnpm dev:mobile
 ```
 
-### Building and Testing
+Open the web app at `http://localhost:5173`. For mobile, scan the QR code with the Expo Go app or run on a connected device.
+
+## Build
 
 ```bash
-# Check all crates compile
-cargo check --all
+# Web production build
+pnpm build
 
-# Run tests
-cargo test --all
+# Mobile — preview build (EAS)
+pnpm --filter @cosmic-cults/mobile build:preview
 
-# Run clippy (linter)
-cargo clippy --all-targets --all-features -- -D warnings
-
-# Format code
-cargo fmt --all
-
-# Build documentation
-cargo doc --no-deps --all-features --open
+# Mobile — production build (EAS)
+pnpm --filter @cosmic-cults/mobile build:production
 ```
 
-### Running Examples
-
-See [game-runner/examples/README.md](game-runner/examples/README.md) for detailed information.
+## Testing and Quality
 
 ```bash
-# Run a native example
-cargo run --example basic_physics
-
-# List all examples
-cargo run --example
+pnpm test              # unit tests (Vitest + fast-check)
+pnpm test:coverage     # with coverage report
+pnpm lint              # Biome lint check
+pnpm format            # Biome auto-fix
+pnpm check             # TypeScript type check across all packages
 ```
 
-### WASM Development
+## Package Structure
 
-```bash
-# Start development server with hot reload
-trunk serve --address 0.0.0.0 --port 8080
+| Package | Description |
+|---------|-------------|
+| `@cosmic-cults/types` | Shared TypeScript types |
+| `@cosmic-cults/config` | Game constants and configuration |
+| `@cosmic-cults/core` | Hex grid math and utilities |
+| `@cosmic-cults/engine` | BabylonJS camera, materials, scene |
+| `@cosmic-cults/ecs` | Miniplex ECS world and archetypes |
+| `@cosmic-cults/game` | BabylonJS game integration |
+| `@cosmic-cults/navigation` | RecastJS navmesh pathfinding |
+| `@cosmic-cults/procedural` | Terrain feature generation |
+| `@cosmic-cults/store` | Zustand UI state |
+| `@cosmic-cults/ui` | HUD, dialogs, minimap, toast |
+| `@cosmic-cults/web` | Vite web app |
+| `@cosmic-cults/mobile` | Expo SDK 54 mobile app |
 
-# Build for production
-trunk build --release
+## Contributing
 
-# The WASM build will be in dist/
-```
+1. Read `CLAUDE.md` and `AGENTS.md` for project rules and architecture.
+2. Create a branch: `git checkout -b feat/your-feature`.
+3. Keep files under 300 lines. Write tests for new logic.
+4. Ensure `pnpm test && pnpm lint && pnpm check` all pass.
+5. Open a pull request — CI must be green before merging.
 
-## Code Quality Tools
-
-This project uses strict code quality standards:
-
-### Pre-commit Hooks
-
-Install pre-commit hooks to automatically check code before committing:
-
-```bash
-# Install pre-commit (if not already installed)
-pip install pre-commit
-
-# Install the git hooks
-pre-commit install
-
-# Run manually on all files
-pre-commit run --all-files
-```
-
-The pre-commit hooks will:
-- Format code with `rustfmt`
-- Lint code with `clippy`
-- Check code compiles
-- Remove trailing whitespace
-- Validate YAML/TOML files
-
-### Continuous Integration
-
-All code is automatically checked by CI on every push and pull request:
-- ✅ Format checking (`cargo fmt`)
-- ✅ Linting (`cargo clippy`)
-- ✅ Compilation (`cargo check`)
-- ✅ Tests (`cargo test`)
-- ✅ Documentation (`cargo doc`)
-- ✅ WASM build
-
-## Documentation
-
-- [Online Documentation](https://jbcom.github.io/rust-cosmic-cults/)
-- [Rust Standards](RUST_STANDARDS.md) - Development standards and tooling
-- [WASM Demo](WASM_DEMO.md) - WebAssembly build and deployment
-- [Examples](game-runner/examples/README.md) - Runnable examples
-- [Architecture Docs](docs/) - Detailed architecture documentation
+Conventional Commits are required: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
 
 ## License
 
-Licensed under either of:
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-- MIT license ([LICENSE-MIT](LICENSE-MIT))
-
-at your option.
+Licensed under either of Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE)) or MIT license ([LICENSE-MIT](LICENSE-MIT)) at your option.

@@ -1,77 +1,82 @@
+---
+title: Claude Agent Entry Point
+updated: 2026-04-09
+status: current
+domain: technical
+---
+
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Cosmic Cults is a Lovecraftian 4X real-time strategy game built on React Native (Expo SDK 54) + BabylonJS. The project is mid-migration from a Rust/Bevy codebase. This file contains only project-specific instructions.
 
-> **See also:** `AGENTS.md` for comprehensive agent instructions.
+## Critical Context
 
-## Quick Start
+The codebase is in active migration. The TypeScript packages under `packages/` are the active target. Rust code in `docs/legacy/` is reference only — do not modify it.
+
+## Repository Layout
+
+```
+cosmic-cults/
+├── packages/
+│   ├── types/          # @cosmic-cults/types — shared TypeScript types
+│   ├── config/         # @cosmic-cults/config — game constants
+│   ├── core/           # @cosmic-cults/core — hex grid math
+│   ├── engine/         # @cosmic-cults/engine — BabylonJS camera/materials/scene
+│   ├── ecs/            # @cosmic-cults/ecs — Miniplex ECS world and archetypes
+│   ├── game/           # @cosmic-cults/game — BabylonJS integration, hex grid rendering
+│   ├── navigation/     # @cosmic-cults/navigation — RecastJS navmesh
+│   ├── procedural/     # @cosmic-cults/procedural — terrain feature generation
+│   ├── store/          # @cosmic-cults/store — Zustand UI state
+│   ├── ui/             # @cosmic-cults/ui — HUD, dialogs, minimap, toast
+│   ├── web/            # @cosmic-cults/web — Vite dev app
+│   └── mobile/         # @cosmic-cults/mobile — Expo SDK 54 app
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── DESIGN.md
+│   ├── TESTING.md
+│   ├── STATE.md
+│   └── LORE.md
+└── memory-bank/        # AI session context (not source of truth for docs)
+```
+
+## Development Commands
 
 ```bash
-# Check current context before starting
-cat memory-bank/activeContext.md 2>/dev/null || echo "No active context"
-
-# Check for project-specific instructions
-cat .github/copilot-instructions.md 2>/dev/null
+pnpm install            # install all workspace dependencies
+pnpm dev                # web dev server (Vite)
+pnpm dev:mobile         # Expo mobile dev server
+pnpm build              # web production build
+pnpm test               # vitest across all packages
+pnpm test:coverage      # with coverage
+pnpm lint               # Biome check
+pnpm format             # Biome fix
+pnpm check              # TypeScript across all packages
 ```
 
-## Development Workflow
+## Tech Stack
 
-### Before Making Changes
-1. Read the issue/PR description completely
-2. Check `memory-bank/` for project context
-3. Look at recent commits for coding patterns
-4. Run tests to ensure clean starting state
+| Purpose | Technology |
+|---------|------------|
+| Mobile app | React Native + Expo SDK 54 |
+| Web app | Vite + React 19 |
+| 3D engine | BabylonJS 8.x + Reactylon |
+| ECS | Miniplex 2.x |
+| UI state | Zustand 5.x |
+| Navigation/AI | RecastJS (via recast-navigation) |
+| Linting | Biome 2.x |
+| Testing | Vitest + fast-check (property tests) |
+| Language | TypeScript 5.9 strict |
+| Package manager | pnpm 10+ workspaces |
 
-### Making Changes
-1. Create a feature branch if not already on one
-2. Make minimal, focused changes
-3. Write/update tests for new functionality
-4. Ensure all tests pass
-5. Update documentation if needed
+## Code Rules
 
-### Committing
-```bash
-# Use conventional commits
-git commit -m "feat(scope): add new feature"
-git commit -m "fix(scope): resolve bug"
-git commit -m "docs: update README"
-git commit -m "test: add missing tests"
-git commit -m "chore: update dependencies"
-```
+- Max 300 LOC per file
+- TypeScript strict mode — no `any`, no type assertions without comment
+- Miniplex: component presence = truthy; never set boolean components to `false`, omit them instead
+- BabylonJS instances must be disposed in cleanup functions
+- 60 FPS target on mobile — profile before and after rendering changes
 
-## Code Quality Checklist
+## Reference Projects
 
-Before considering work complete:
-- [ ] All tests pass
-- [ ] Linting passes
-- [ ] No new warnings introduced
-- [ ] Documentation updated if needed
-- [ ] Commit messages follow conventional format
-
-## Project Structure
-
-```
-.
-├── src/                 # Source code
-├── tests/               # Test files
-├── docs/                # Documentation
-├── memory-bank/         # AI context files
-│   ├── activeContext.md # Current focus
-│   └── progress.md      # Session progress
-├── .github/
-│   ├── copilot-instructions.md  # Copilot context
-│   └── workflows/       # CI/CD
-├── CLAUDE.md            # This file
-└── AGENTS.md            # Agent instructions
-```
-
-## Getting Help
-
-1. Check `AGENTS.md` for detailed instructions
-2. Check `.github/copilot-instructions.md` for dev commands
-3. Check `docs/` for architecture decisions
-4. Look at test files for usage examples
-
-## Repository-Specific Notes
-
-<!-- Add repository-specific context below -->
+- `../wheres-ball-though` — React Native + Expo patterns
+- `../neo-tokyo-rival-academies` — BabylonJS + Reactylon patterns

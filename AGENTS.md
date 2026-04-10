@@ -1,146 +1,142 @@
-# AGENTS.md
+---
+title: Agent Protocols
+updated: 2026-04-09
+status: current
+domain: technical
+---
 
-Comprehensive instructions for AI agents working with this repository.
+# Agent Protocols
 
-## Agent Types
-
-| Agent | Best For | Context File |
-|-------|----------|--------------|
-| **Claude** | Complex reasoning, architecture, cross-repo work | `CLAUDE.md` |
-| **Copilot** | Issue kickoffs, targeted fixes, code generation | `.github/copilot-instructions.md` |
-| **Cursor** | IDE-integrated development | `.cursor/rules/*.mdc` |
+Extended operating instructions for all AI agents working on Cosmic Cults.
 
 ## Before Starting Any Task
 
-### 1. Check Context
+1. Read `memory-bank/activeContext.md` for recent session state.
+2. Run `git status` and `git log --oneline -5` to understand the current branch.
+3. Check `gh pr list` for open PRs that need attention.
+4. Verify the TypeScript workspace builds: `pnpm check`.
+
+## Task Hierarchy
+
+The active migration spec lives in `.kiro/specs/1.0-migration/`. Work through tasks in order — later tasks depend on earlier foundations.
+
 ```bash
-# Current focus and recent decisions
-cat memory-bank/activeContext.md
-
-# Session progress
-cat memory-bank/progress.md
+cat .kiro/specs/1.0-migration/tasks.md        # current task list
+cat .kiro/specs/1.0-migration/requirements.md # acceptance criteria
+cat .kiro/specs/1.0-migration/design.md       # architecture decisions
+cat .kiro/steering/tech.md                    # commands and patterns
 ```
 
-### 2. Understand the Request
-- Read the issue/PR description completely
-- Check for linked issues or PRs
-- Look for acceptance criteria
+## Agent Capabilities by Type
 
-### 3. Check Existing Patterns
-```bash
-# Recent commits show coding patterns
-git log --oneline -10
+| Agent | Strengths | Primary Context |
+|-------|-----------|-----------------|
+| Claude | Architecture, cross-package work, complex reasoning | CLAUDE.md |
+| Copilot | Targeted fixes, code generation in IDE | `.github/copilot-instructions.md` |
+| Cursor | IDE-integrated development | `.cursor/rules/` |
+| Kiro | Autonomous spec execution | `.kiro/` |
 
-# Similar files show conventions
-find . -name "*.py" | head -5 | xargs head -50
+## Architecture Patterns
+
+### ECS (Miniplex)
+
+Components are properties on entities. Presence = truthy; absence = not set.
+
+```typescript
+// Correct: add by setting property
+entity.selected = true;
+
+// Correct: remove by deleting
+delete entity.selected;
+
+// Wrong: never set boolean components false
+entity.selected = false; // do NOT do this
 ```
 
-## Development Commands
+Archetypes are pre-defined queries. Add new archetypes in `packages/ecs/src/archetypes.ts`.
 
-<!-- These will be overridden by language-specific instructions -->
+### BabylonJS Lifecycle
 
-### Testing
-```bash
-# Run tests (check package.json or pyproject.toml for exact command)
-npm test        # Node.js
-uv run pytest   # Python
-go test ./...   # Go
-```
+- Always initialize from `packages/engine/src/scene/` — never construct scenes inline.
+- Dispose resources: meshes, materials, navigation plugins must call `.dispose()`.
+- Use thin instances (`thinInstanceSetBuffer`) for tile grids, not individual meshes.
+- Cel-shading uses `CellMaterial` from `@babylonjs/materials`.
 
-### Linting
-```bash
-npm run lint    # Node.js
-uvx ruff check  # Python
-golangci-lint run  # Go
-```
+### Hex Grid Coordinate Systems
 
-### Building
-```bash
-npm run build   # Node.js
-uv build        # Python
-go build        # Go
-```
+- Axial coordinates (`HexCoord: { q, r }`) for storage and ECS.
+- Cube coordinates (`CubeCoord: { x, y, z }`) for distance and rotation math.
+- World coordinates (`WorldPosition: { x, y, z }`) for BabylonJS.
+- Pointy-top hex orientation: `Math.PI / 6` rotation on cylinder meshes.
+- Conversion utilities in `packages/core/src/hex/`.
 
-## Commit Message Format
+### State Management Split
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+- ECS world (`packages/ecs/`) owns entity state (units, tiles, combat).
+- Zustand store (`packages/store/`) owns UI state (camera target, selection, turn/phase).
+- Never duplicate state between the two systems.
 
-```
-<type>(<scope>): <description>
+### Navigation
 
-[optional body]
-
-[optional footer]
-```
-
-### Types
-- `feat`: New feature (minor version bump)
-- `fix`: Bug fix (patch version bump)
-- `docs`: Documentation only
-- `style`: Formatting, no code change
-- `refactor`: Code restructure, no behavior change
-- `test`: Adding/updating tests
-- `chore`: Maintenance tasks
-
-### Examples
-```bash
-feat(auth): add OAuth2 support
-fix(api): handle null response correctly
-docs: update installation instructions
-test(utils): add edge case coverage
-chore(deps): update dependencies
-```
+- RecastJS via `recast-navigation` — async `init()` before use.
+- Call `initializeNavigation(scene)` once, then reuse the singleton.
+- Build navmesh from terrain meshes after hex grid chunk creation.
 
 ## Error Recovery
 
-### Tests Failing
-1. Read the error message carefully
-2. Check if it's a flaky test (run again)
-3. Check recent commits that might have caused it
-4. Fix the root cause, not just the symptom
+### Build failures
+1. `pnpm check` — find TypeScript errors first.
+2. Check import paths use workspace aliases (`@cosmic-cults/...`), not relative paths.
+3. Verify Reactylon component structure matches BabylonJS API version.
 
-### Lint Errors
-1. Run auto-fix first (`--fix` flag)
-2. Manually fix remaining issues
-3. Don't disable rules without justification
+### Test failures
+1. ECS world must be cleared in `beforeEach` — check test setup.
+2. BabylonJS imports need mocking in unit tests (no DOM).
+3. Use `fast-check` for property tests on game logic.
 
-### Build Errors
-1. Check for type errors first
-2. Ensure dependencies are installed
-3. Check for missing files or imports
+### Mobile issues
+1. Clear Metro cache: `pnpm --filter @cosmic-cults/mobile clean`.
+2. Rebuild native: `npx expo run:android` or `npx expo run:ios`.
+3. Check `@babylonjs/react-native` version matches `@babylonjs/core`.
 
 ## Memory Bank Protocol
 
-### Reading Context
+Read context at session start:
+
 ```bash
-# Always check before starting
 cat memory-bank/activeContext.md
 ```
 
-### Updating Context
+Append at session end:
+
 ```bash
-# After completing significant work
 cat >> memory-bank/activeContext.md << 'EOF'
 
-## Session: $(date +%Y-%m-%d)
+## Session: YYYY-MM-DD
 
 ### Completed
-- [x] Description of completed work
+- [x] ...
 
 ### For Next Agent
-- [ ] Remaining tasks
+- [ ] ...
 EOF
 ```
 
-## What NOT To Do
+## Commit Conventions
 
-- ❌ Don't make unrelated changes
-- ❌ Don't skip tests
-- ❌ Don't ignore linting errors
-- ❌ Don't commit without meaningful message
-- ❌ Don't push directly to main (use PRs)
-- ❌ Don't add dependencies without justification
+Conventional Commits with package scope:
 
-## Repository-Specific Instructions
+```
+feat(engine): add cel-shaded water material
+fix(ecs): correct entity disposal order in removeEntity
+test(core): add property tests for hexLine
+docs: update STATE.md with Task 02 progress
+```
 
-<!-- Add repository-specific agent instructions below -->
+## Critical Rules
+
+- Do not touch Rust code in `docs/legacy/` — reference only.
+- Follow the task dependency graph in `tasks.md` strictly.
+- Verify 60 FPS on mobile after any rendering change.
+- Update `memory-bank/activeContext.md` at the end of every session.
+- Write property-based tests (fast-check) for all pure game logic functions.

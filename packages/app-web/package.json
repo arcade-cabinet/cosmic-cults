@@ -1,0 +1,35 @@
+{
+  "name": "@cosmic-cults/app-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vite web app for Cosmic Cults development",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "tsc --noEmit",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^8.46.2",
+    "@babylonjs/gui": "^8.46.2",
+    "@babylonjs/loaders": "^8.46.2",
+    "@babylonjs/materials": "^8.46.2",
+    "@cosmic-cults/core": "workspace:*",
+    "@cosmic-cults/game": "workspace:*",
+    "@cosmic-cults/types": "workspace:*",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.17"
+  }
+}
